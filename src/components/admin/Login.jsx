@@ -16,7 +16,7 @@ const Login = ({ onLogin }) => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-surface px-4">
+    <div className="relative min-h-screen flex items-center justify-center bg-gradient-surface px-4">
       <div className="w-full max-w-md surface-card p-8 animate-fade-in">
         <div className="flex flex-col items-center text-center mb-7">
           <div className="h-12 w-12 rounded-lg bg-primary flex items-center justify-center mb-3">
