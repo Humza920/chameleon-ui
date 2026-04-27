@@ -5,21 +5,21 @@ import Topbar from "@/components/admin/Topbar";
 import ConversationsView from "@/components/admin/ConversationsView";
 import FeedbackView from "@/components/admin/FeedbackView";
 import FBCommentsView from "@/components/admin/FBCommentsView";
-import BotControlModal from "@/components/admin/BotControlModal";
+import SettingsView from "@/components/admin/SettingsView";
 import MessageModal from "@/components/admin/MessageModal";
-import { MessageCircle, Star, Facebook } from "lucide-react";
+import { MessageCircle, Star, Facebook, Settings as SettingsIcon } from "lucide-react";
 
 const MOBILE_NAV = [
-  { id: "conversations", label: "Conversations", icon: MessageCircle },
+  { id: "conversations", label: "Chats", icon: MessageCircle },
   { id: "feedback", label: "Feedback", icon: Star },
-  { id: "fbcomments", label: "FB Comments", icon: Facebook },
+  { id: "fbcomments", label: "FB", icon: Facebook },
+  { id: "settings", label: "Settings", icon: SettingsIcon },
 ];
 
 const Dashboard = () => {
   const [authed, setAuthed] = useState(false);
   const [active, setActive] = useState("conversations");
   const [dark, setDark] = useState(false);
-  const [botOpen, setBotOpen] = useState(false);
   const [fullMessage, setFullMessage] = useState(null);
 
   useEffect(() => {
@@ -38,15 +38,14 @@ const Dashboard = () => {
 
   return (
     <div className="flex h-screen w-full bg-background overflow-hidden">
-      <Sidebar activeId={active} onSelect={setActive} />
+      <Sidebar activeId={active} onSelect={setActive} onLogout={() => setAuthed(false)} />
 
       <div className="flex flex-1 min-w-0 flex-col">
         <Topbar
           stats={stats}
           dark={dark}
           onToggleDark={() => setDark((d) => !d)}
-          onOpenBotControl={() => setBotOpen(true)}
-          onLogout={() => setAuthed(false)}
+          adminName="Ayesha Khan"
         />
 
         {/* Mobile nav tabs */}
@@ -72,10 +71,10 @@ const Dashboard = () => {
           {active === "conversations" && <ConversationsView onShowFull={setFullMessage} />}
           {active === "feedback" && <FeedbackView />}
           {active === "fbcomments" && <FBCommentsView />}
+          {active === "settings" && <SettingsView />}
         </main>
       </div>
 
-      <BotControlModal open={botOpen} onClose={() => setBotOpen(false)} />
       <MessageModal message={fullMessage} onClose={() => setFullMessage(null)} />
     </div>
   );

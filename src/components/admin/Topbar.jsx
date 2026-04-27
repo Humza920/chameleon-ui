@@ -1,6 +1,6 @@
-import { Moon, Sun, Settings, LogOut, Bot } from "lucide-react";
+import { Moon, Sun, Bot } from "lucide-react";
 
-const Topbar = ({ stats, dark, onToggleDark, onOpenBotControl, onLogout }) => {
+const Topbar = ({ stats, dark, onToggleDark, adminName = "Admin" }) => {
   return (
     <header className="sticky top-0 z-20 bg-card border-b border-border">
       <div className="flex items-center justify-between gap-4 px-4 md:px-6 h-14">
@@ -18,16 +18,19 @@ const Topbar = ({ stats, dark, onToggleDark, onOpenBotControl, onLogout }) => {
           ))}
         </div>
 
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-2">
           <button onClick={onToggleDark} className="icon-btn" aria-label="Toggle theme">
-            {dark ? <Sun className="h-4.5 w-4.5" /> : <Moon className="h-4.5 w-4.5" />}
+            {dark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
           </button>
-          <button onClick={onOpenBotControl} className="btn-secondary !py-1.5 !px-3">
-            <Settings className="h-4 w-4" /> Bot Control
-          </button>
-          <button onClick={onLogout} className="btn-ghost text-destructive hover:text-destructive">
-            <LogOut className="h-4 w-4" /> Logout
-          </button>
+          <div className="flex items-center gap-2 pl-2 border-l border-border">
+            <div className="h-8 w-8 rounded-full bg-gradient-primary flex items-center justify-center text-xs font-semibold text-primary-foreground">
+              {adminName.charAt(0).toUpperCase()}
+            </div>
+            <div className="hidden sm:block leading-tight">
+              <p className="text-xs font-semibold text-foreground">{adminName}</p>
+              <p className="text-[10px] text-muted-foreground">Administrator</p>
+            </div>
+          </div>
         </div>
       </div>
 

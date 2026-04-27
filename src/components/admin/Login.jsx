@@ -16,7 +16,7 @@ const Login = ({ onLogin }) => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-surface px-4">
+    <div className="relative min-h-screen flex items-center justify-center bg-gradient-surface px-4">
       <div className="w-full max-w-md surface-card p-8 animate-fade-in">
         <div className="flex flex-col items-center text-center mb-7">
           <div className="h-12 w-12 rounded-lg bg-primary flex items-center justify-center mb-3">
@@ -59,6 +59,16 @@ const Login = ({ onLogin }) => {
         <p className="text-center text-[11px] text-muted-foreground mt-7">
           Protected admin area • SMIT Chatbot System
         </p>
+      </div>
+
+      <p className="absolute bottom-5 left-0 right-0 text-center text-[11px] text-muted-foreground">
+        Created by <span className="font-semibold text-foreground">Zuhair Khan</span>
+      </p>
+    </div>
+  );
+};
+
+export default Login;
       </div>
     </div>
   );
