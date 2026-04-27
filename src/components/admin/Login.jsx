@@ -60,6 +60,16 @@ const Login = ({ onLogin }) => {
           Protected admin area • SMIT Chatbot System
         </p>
       </div>
+
+      <p className="absolute bottom-5 left-0 right-0 text-center text-[11px] text-muted-foreground">
+        Created by <span className="font-semibold text-foreground">Zuhair Khan</span>
+      </p>
+    </div>
+  );
+};
+
+export default Login;
+      </div>
     </div>
   );
 };
