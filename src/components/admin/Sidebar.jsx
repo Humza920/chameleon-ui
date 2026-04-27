@@ -1,4 +1,4 @@
-import { MessageCircle, Star, Facebook, Database } from "lucide-react";
+import { MessageCircle, Star, Facebook, Database, Settings, LogOut } from "lucide-react";
 
 const ITEMS = [
   { id: "conversations", label: "Conversations", icon: MessageCircle },
@@ -6,7 +6,7 @@ const ITEMS = [
   { id: "fbcomments", label: "FB Comments", icon: Facebook },
 ];
 
-const Sidebar = ({ activeId, onSelect }) => {
+const Sidebar = ({ activeId, onSelect, onLogout }) => {
   return (
     <aside className="hidden md:flex w-60 shrink-0 flex-col bg-sidebar text-sidebar-foreground border-r border-sidebar-border">
       <div className="flex items-center gap-2.5 px-4 h-14 border-b border-sidebar-border">
@@ -41,8 +41,24 @@ const Sidebar = ({ activeId, onSelect }) => {
         </nav>
       </div>
 
-      <div className="mt-auto px-4 py-3 border-t border-sidebar-border">
-        <p className="text-[11px] text-sidebar-foreground/60">v1.0.0 • Read-only</p>
+      <div className="mt-auto px-3 py-3 border-t border-sidebar-border">
+        <p className="px-3 mb-2 text-[10px] font-semibold uppercase tracking-wider text-sidebar-foreground/50">
+          Account
+        </p>
+        <nav className="flex flex-col gap-0.5">
+          <button
+            onClick={() => onSelect("settings")}
+            className={`nav-item ${activeId === "settings" ? "nav-item-active" : ""}`}
+          >
+            <Settings className="h-4 w-4" />
+            <span>Settings</span>
+          </button>
+          <button onClick={onLogout} className="nav-item hover:!text-destructive">
+            <LogOut className="h-4 w-4" />
+            <span>Logout</span>
+          </button>
+        </nav>
+        <p className="mt-3 px-3 text-[11px] text-sidebar-foreground/50">v1.0.0 • Read-only</p>
       </div>
     </aside>
   );
