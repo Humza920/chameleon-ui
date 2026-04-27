@@ -2,123 +2,145 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Nova Dashboard Design System
-   All colors MUST be HSL. Premium SaaS look (MongoDB / Stripe inspired).
+/* Enterprise Admin Design System — MongoDB Compass inspired.
+   Flat, clean, minimal. All colors HSL.
 */
 
 @layer base {
   :root {
-    --background: 220 25% 98%;
-    --foreground: 222 25% 14%;
+    --background: 210 20% 98%;
+    --foreground: 215 25% 17%;
 
     --card: 0 0% 100%;
-    --card-foreground: 222 25% 14%;
+    --card-foreground: 215 25% 17%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 222 25% 14%;
+    --popover-foreground: 215 25% 17%;
 
-    /* Primary: a refined indigo/violet (premium, not loud) */
-    --primary: 244 65% 58%;
+    /* Subtle blue accent */
+    --primary: 214 88% 50%;
     --primary-foreground: 0 0% 100%;
-    --primary-soft: 244 80% 96%;
+    --primary-soft: 214 95% 96%;
 
-    --secondary: 220 20% 96%;
-    --secondary-foreground: 222 25% 18%;
+    --secondary: 215 16% 95%;
+    --secondary-foreground: 215 25% 20%;
 
-    --muted: 220 20% 96%;
-    --muted-foreground: 220 10% 46%;
+    --muted: 215 16% 96%;
+    --muted-foreground: 215 12% 48%;
 
-    --accent: 168 76% 42%;
+    --accent: 158 64% 40%;
     --accent-foreground: 0 0% 100%;
-    --accent-soft: 168 70% 95%;
+    --accent-soft: 158 60% 94%;
 
-    --warning: 38 95% 55%;
+    --warning: 38 92% 50%;
     --warning-soft: 38 100% 95%;
 
-    --destructive: 0 75% 60%;
+    --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 220 18% 92%;
-    --input: 220 18% 92%;
-    --ring: 244 65% 58%;
+    --border: 215 18% 90%;
+    --input: 215 18% 90%;
+    --ring: 214 88% 50%;
 
-    --radius: 0.875rem;
+    --radius: 0.5rem;
 
-    /* Sidebar */
-    --sidebar-background: 222 30% 11%;
-    --sidebar-foreground: 220 15% 75%;
-    --sidebar-primary: 244 65% 62%;
+    /* Compass-style sidebar — light, slate */
+    --sidebar-background: 215 28% 17%;
+    --sidebar-foreground: 215 14% 75%;
+    --sidebar-primary: 214 88% 56%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 222 25% 16%;
+    --sidebar-accent: 215 25% 22%;
     --sidebar-accent-foreground: 0 0% 100%;
-    --sidebar-border: 222 25% 18%;
-    --sidebar-ring: 244 65% 62%;
+    --sidebar-border: 215 25% 24%;
+    --sidebar-ring: 214 88% 56%;
 
-    /* Sub sidebar (lighter, to feel like an extension) */
-    --subsidebar-background: 222 25% 15%;
-    --subsidebar-foreground: 220 15% 82%;
-    --subsidebar-muted: 220 12% 60%;
-    --subsidebar-border: 222 22% 22%;
+    --subsidebar-background: 215 25% 20%;
+    --subsidebar-foreground: 215 14% 80%;
+    --subsidebar-muted: 215 12% 60%;
+    --subsidebar-border: 215 22% 26%;
 
-    /* Gradients & shadows */
-    --gradient-primary: linear-gradient(135deg, hsl(244 70% 62%), hsl(262 70% 64%));
-    --gradient-accent: linear-gradient(135deg, hsl(168 76% 42%), hsl(190 80% 50%));
-    --gradient-surface: linear-gradient(180deg, hsl(220 25% 99%), hsl(220 25% 96%));
+    --gradient-primary: linear-gradient(135deg, hsl(214 88% 50%), hsl(214 88% 60%));
+    --gradient-accent: linear-gradient(135deg, hsl(158 64% 40%), hsl(178 64% 45%));
+    --gradient-surface: linear-gradient(180deg, hsl(210 20% 99%), hsl(210 20% 97%));
 
-    --shadow-sm: 0 1px 2px 0 hsl(222 25% 14% / 0.04);
-    --shadow-md: 0 4px 14px -4px hsl(222 25% 14% / 0.08);
-    --shadow-lg: 0 20px 40px -20px hsl(222 25% 14% / 0.18);
-    --shadow-glow: 0 10px 40px -10px hsl(244 65% 58% / 0.35);
+    --shadow-sm: 0 1px 2px 0 hsl(215 25% 17% / 0.04);
+    --shadow-md: 0 2px 8px -2px hsl(215 25% 17% / 0.06);
+    --shadow-lg: 0 8px 24px -10px hsl(215 25% 17% / 0.10);
+    --shadow-glow: 0 4px 16px -4px hsl(214 88% 50% / 0.25);
 
-    --transition-base: 200ms cubic-bezier(0.4, 0, 0.2, 1);
-    --transition-smooth: 320ms cubic-bezier(0.22, 1, 0.36, 1);
+    --transition-base: 160ms cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-smooth: 240ms cubic-bezier(0.22, 1, 0.36, 1);
   }
 
   .dark {
-    --background: 222 30% 8%;
-    --foreground: 220 15% 92%;
-    --card: 222 28% 11%;
-    --card-foreground: 220 15% 92%;
-    --popover: 222 28% 11%;
-    --popover-foreground: 220 15% 92%;
-    --primary: 244 70% 65%;
+    --background: 215 28% 10%;
+    --foreground: 215 14% 92%;
+    --card: 215 25% 13%;
+    --card-foreground: 215 14% 92%;
+    --popover: 215 25% 13%;
+    --popover-foreground: 215 14% 92%;
+    --primary: 214 88% 58%;
     --primary-foreground: 0 0% 100%;
-    --primary-soft: 244 40% 18%;
-    --secondary: 222 22% 16%;
-    --secondary-foreground: 220 15% 92%;
-    --muted: 222 22% 16%;
-    --muted-foreground: 220 10% 62%;
-    --accent: 168 70% 48%;
+    --primary-soft: 214 50% 20%;
+    --secondary: 215 22% 17%;
+    --secondary-foreground: 215 14% 92%;
+    --muted: 215 22% 17%;
+    --muted-foreground: 215 12% 62%;
+    --accent: 158 60% 45%;
     --accent-foreground: 0 0% 100%;
-    --border: 222 22% 18%;
-    --input: 222 22% 18%;
-    --ring: 244 70% 65%;
+    --accent-soft: 158 50% 18%;
+    --border: 215 22% 20%;
+    --input: 215 22% 20%;
+    --ring: 214 88% 58%;
+
+    --sidebar-background: 215 32% 9%;
+    --sidebar-foreground: 215 14% 72%;
+    --sidebar-accent: 215 28% 14%;
+    --sidebar-border: 215 28% 16%;
   }
 }
 
 @layer base {
-  * {
-    @apply border-border;
-  }
-  html, body, #root {
-    height: 100%;
-  }
+  * { @apply border-border; }
+  html, body, #root { height: 100%; }
   body {
     @apply bg-background text-foreground antialiased;
-    font-family: 'Poppins', ui-sans-serif, system-ui, -apple-system, sans-serif;
+    font-family: 'Poppins', 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   }
 }
 
 @layer components {
   .surface-card {
-    @apply rounded-2xl border border-border bg-card shadow-[var(--shadow-md)];
+    @apply rounded-lg border border-border bg-card;
   }
   .stat-card {
-    @apply surface-card p-5 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[var(--shadow-lg)];
+    @apply surface-card p-4 transition-colors hover:border-primary/30;
   }
   .icon-btn {
-    @apply inline-flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground;
+    @apply inline-flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground;
+  }
+  .nav-item {
+    @apply flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium text-sidebar-foreground transition-colors cursor-pointer;
+  }
+  .nav-item:hover { @apply bg-sidebar-accent text-sidebar-accent-foreground; }
+  .nav-item-active {
+    @apply bg-sidebar-accent text-sidebar-accent-foreground border-l-2 border-sidebar-primary;
+  }
+  .input-base {
+    @apply w-full rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/40 focus:border-ring transition;
+  }
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-50;
+  }
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 rounded-md border border-border bg-card px-4 py-2 text-sm font-medium text-foreground hover:bg-muted transition-colors;
+  }
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 rounded-md px-3 py-1.5 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors;
+  }
+  .chip {
+    @apply inline-flex items-center gap-1 rounded-full border border-border bg-card px-2.5 py-0.5 text-xs font-medium text-muted-foreground;
   }
   .scroll-thin::-webkit-scrollbar { width: 6px; height: 6px; }
   .scroll-thin::-webkit-scrollbar-thumb { background: hsl(var(--border)); border-radius: 999px; }
