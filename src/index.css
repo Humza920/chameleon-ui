@@ -17,20 +17,20 @@
     --popover: 0 0% 100%;
     --popover-foreground: 215 25% 17%;
 
-    /* Subtle blue accent */
-    --primary: 214 88% 50%;
+    /* MongoDB green accent */
+    --primary: 145 63% 35%;
     --primary-foreground: 0 0% 100%;
-    --primary-soft: 214 95% 96%;
+    --primary-soft: 145 50% 94%;
 
-    --secondary: 215 16% 95%;
-    --secondary-foreground: 215 25% 20%;
+    --secondary: 150 16% 95%;
+    --secondary-foreground: 150 25% 18%;
 
-    --muted: 215 16% 96%;
-    --muted-foreground: 215 12% 48%;
+    --muted: 150 14% 96%;
+    --muted-foreground: 150 8% 42%;
 
-    --accent: 158 64% 40%;
+    --accent: 145 63% 42%;
     --accent-foreground: 0 0% 100%;
-    --accent-soft: 158 60% 94%;
+    --accent-soft: 145 50% 92%;
 
     --warning: 38 92% 50%;
     --warning-soft: 38 100% 95%;
