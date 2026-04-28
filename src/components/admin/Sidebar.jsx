@@ -14,7 +14,7 @@ const Sidebar = ({ activeId, onSelect, onLogout }) => {
           <Database className="h-4 w-4 text-sidebar-primary-foreground" />
         </div>
         <div className="leading-tight">
-          <p className="text-sm font-semibold text-white">SMIT Chatbot</p>
+          <p className="text-sm font-semibold text-sidebar-foreground">SMIT Chatbot</p>
           <p className="text-[11px] text-sidebar-foreground/70">Admin Console</p>
         </div>
       </div>

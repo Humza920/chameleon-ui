@@ -1,12 +1,6 @@
 import { useState } from "react";
 import { Search, ChevronDown, ChevronUp, Facebook } from "lucide-react";
-
-const MOCK = [
-  { id: 1, user: "John D.", text: "When does the next batch start?", confidence: "high", read: false, date: "2026-04-25", cost: 0.004 },
-  { id: 2, user: "Mariam K.", text: "Is there a refund policy?", confidence: "low", read: false, date: "2026-04-24", cost: 0.006 },
-  { id: 3, user: "Ahmed R.", text: "Course price?", confidence: "medium", read: true, date: "2026-04-23", cost: 0.003 },
-  { id: 4, user: "Zara F.", text: "How to enroll?", confidence: "high", read: true, date: "2026-04-22", cost: 0.005 },
-];
+import { getFBComments, getTotalFBCommentsCost, getUnreadFBCommentsCount, getLowConfidenceFBCommentsCount } from "@/helper";
 
 const ConfBadge = ({ level }) => {
   const map = {
@@ -18,6 +12,7 @@ const ConfBadge = ({ level }) => {
 };
 
 const FBCommentsView = () => {
+  const MOCK = getFBComments();
   const [open, setOpen] = useState(true);
   const [query, setQuery] = useState("");
   const [conf, setConf] = useState(null);
@@ -35,9 +30,9 @@ const FBCommentsView = () => {
     return true;
   });
 
-  const totalCost = MOCK.reduce((s, c) => s + c.cost, 0).toFixed(3);
-  const lowCount = MOCK.filter((c) => c.confidence === "low").length;
-  const unreadCount = MOCK.filter((c) => !c.read).length;
+  const totalCost = getTotalFBCommentsCost();
+  const lowCount = getLowConfidenceFBCommentsCount();
+  const unreadCount = getUnreadFBCommentsCount();
 
   return (
     <section className="surface-card">

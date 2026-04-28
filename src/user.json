@@ -1,0 +1,125 @@
+{
+  "admin": {
+    "id": 1,
+    "name": "Ayesha Khan",
+    "role": "admin",
+    "email": "ayesha@admin.com"
+  },
+  "stats": [
+    { "label": "Sessions", "value": "2847" },
+    { "label": "Chats", "value": "15,240" },
+    { "label": "Feedback", "value": "892" },
+    { "label": "Tokens", "value": "2.4M" }
+  ],
+  "conversations": [
+    {
+      "id": "c1",
+      "name": "Session #4821",
+      "preview": "How do I reset my password?",
+      "time": "2m",
+      "status": "active",
+      "tokens": 1284,
+      "cost": 0.018,
+      "messages": [
+        { "role": "user", "text": "How do I reset my password?" },
+        { "role": "bot", "text": "You can reset it from the Settings → Security page." },
+        { "role": "user", "text": "Thanks, found it." }
+      ]
+    },
+    {
+      "id": "c2",
+      "name": "Session #4820",
+      "preview": "Need help with billing",
+      "time": "14m",
+      "status": "offline",
+      "tokens": 642,
+      "cost": 0.009,
+      "messages": []
+    },
+    {
+      "id": "c3",
+      "name": "Session #4819",
+      "preview": "Course enrollment question",
+      "time": "1h",
+      "status": "offline",
+      "tokens": 980,
+      "cost": 0.012,
+      "messages": []
+    }
+  ],
+  "feedback": [
+    {
+      "id": 1,
+      "user": "Ali Raza",
+      "rating": 5,
+      "text": "Very helpful and quick responses!",
+      "time": "2h ago"
+    },
+    {
+      "id": 2,
+      "user": "Sara Ahmed",
+      "rating": 4,
+      "text": "Good overall, but could be faster.",
+      "time": "5h ago"
+    },
+    {
+      "id": 3,
+      "user": "Bilal Khan",
+      "rating": 3,
+      "text": "Average. Some answers were not relevant.",
+      "time": "1d ago"
+    },
+    {
+      "id": 4,
+      "user": "Hira Malik",
+      "rating": 5,
+      "text": "Excellent — solved my issue immediately.",
+      "time": "1d ago"
+    },
+    {
+      "id": 5,
+      "user": "Usman Tariq",
+      "rating": 2,
+      "text": "Got stuck in a loop on billing.",
+      "time": "2d ago"
+    }
+  ],
+  "fbcomments": [
+    {
+      "id": 1,
+      "user": "John D.",
+      "text": "When does the next batch start?",
+      "confidence": "high",
+      "read": false,
+      "date": "2026-04-25",
+      "cost": 0.004
+    },
+    {
+      "id": 2,
+      "user": "Mariam K.",
+      "text": "Is there a refund policy?",
+      "confidence": "low",
+      "read": false,
+      "date": "2026-04-24",
+      "cost": 0.006
+    },
+    {
+      "id": 3,
+      "user": "Ahmed R.",
+      "text": "Course price?",
+      "confidence": "medium",
+      "read": true,
+      "date": "2026-04-23",
+      "cost": 0.003
+    },
+    {
+      "id": 4,
+      "user": "Zara F.",
+      "text": "How to enroll?",
+      "confidence": "high",
+      "read": true,
+      "date": "2026-04-22",
+      "cost": 0.005
+    }
+  ]
+}

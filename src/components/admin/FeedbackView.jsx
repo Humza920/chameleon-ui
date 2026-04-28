@@ -1,13 +1,6 @@
 import { useState } from "react";
 import { Star } from "lucide-react";
-
-const MOCK = [
-  { id: 1, user: "Ali Raza", rating: 5, text: "Very helpful and quick responses!", time: "2h ago" },
-  { id: 2, user: "Sara Ahmed", rating: 4, text: "Good overall, but could be faster.", time: "5h ago" },
-  { id: 3, user: "Bilal Khan", rating: 3, text: "Average. Some answers were not relevant.", time: "1d ago" },
-  { id: 4, user: "Hira Malik", rating: 5, text: "Excellent — solved my issue immediately.", time: "1d ago" },
-  { id: 5, user: "Usman Tariq", rating: 2, text: "Got stuck in a loop on billing.", time: "2d ago" },
-];
+import { getFeedback, getAverageRating } from "@/helper";
 
 const Stars = ({ n }) => (
   <div className="flex gap-0.5">
@@ -18,9 +11,10 @@ const Stars = ({ n }) => (
 );
 
 const FeedbackView = () => {
+  const MOCK = getFeedback();
   const [filter, setFilter] = useState(null);
   const list = filter ? MOCK.filter((f) => f.rating === filter) : MOCK;
-  const avg = (MOCK.reduce((s, f) => s + f.rating, 0) / MOCK.length).toFixed(1);
+  const avg = getAverageRating();
 
   return (
     <section className="surface-card">

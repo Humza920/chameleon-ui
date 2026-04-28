@@ -1,19 +1,9 @@
 import { useState } from "react";
 import { Search, MessageCircle, User, Bot } from "lucide-react";
-
-const MOCK = [
-  { id: "c1", name: "Session #4821", preview: "How do I reset my password?", time: "2m", status: "active",
-    tokens: 1284, cost: 0.018,
-    messages: [
-      { role: "user", text: "How do I reset my password?" },
-      { role: "bot", text: "You can reset it from the Settings → Security page." },
-      { role: "user", text: "Thanks, found it." },
-    ] },
-  { id: "c2", name: "Session #4820", preview: "Need help with billing", time: "14m", status: "offline", tokens: 642, cost: 0.009, messages: [] },
-  { id: "c3", name: "Session #4819", preview: "Course enrollment question", time: "1h", status: "offline", tokens: 980, cost: 0.012, messages: [] },
-];
+import { getConversations } from "@/helper";
 
 const ConversationsView = ({ onShowFull }) => {
+  const MOCK = getConversations();
   const [selectedId, setSelectedId] = useState("c1");
   const [query, setQuery] = useState("");
   const list = MOCK.filter((c) => c.name.toLowerCase().includes(query.toLowerCase()));
