@@ -7,7 +7,7 @@ const LoginPage = () => {
   const handleLogin = async () => {
     setLoading(true);
     // Simulate authentication
-    setTimeout(() => {
+    setTimeout() => {
       // Store user in localStorage
       localStorage.setItem("user", JSON.stringify({ role: "admin", id: 1 }));
       // Redirect to dashboard

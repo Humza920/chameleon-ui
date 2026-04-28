@@ -6,8 +6,8 @@ const ConversationsView = ({ onShowFull }) => {
   const MOCK = getConversations();
   const [selectedId, setSelectedId] = useState("c1");
   const [query, setQuery] = useState("");
-  const list = MOCK.filter((c) => c.name.toLowerCase().includes(query.toLowerCase()));
-  const selected = MOCK.find((c) => c.id === selectedId);
+  const list = MOCK.filter(c) => c.name.toLowerCase().includes(query.toLowerCase()));
+  const selected = MOCK.find(c) => c.id === selectedId);
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-[360px_1fr] gap-4 h-full">
@@ -41,7 +41,7 @@ const ConversationsView = ({ onShowFull }) => {
             </div>
           ) : (
             <ul className="divide-y divide-border">
-              {list.map((c) => (
+              {list.map(c) => (
                 <li key={c.id}>
                   <button
                     onClick={() => setSelectedId(c.id)}
@@ -90,7 +90,7 @@ const ConversationsView = ({ onShowFull }) => {
               <p className="text-sm text-muted-foreground">Select a conversation to view messages</p>
             </div>
           ) : (
-            selected.messages.map((m, i) => (
+            selected.messages.map(m, i) => (
               <div key={i} className={`flex gap-2.5 ${m.role === "user" ? "justify-end" : "justify-start"}`}>
                 {m.role === "bot" && (
                   <div className="h-7 w-7 shrink-0 rounded-full bg-primary/10 text-primary flex items-center justify-center">

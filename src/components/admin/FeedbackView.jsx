@@ -4,7 +4,7 @@ import { getFeedback, getAverageRating } from "@/helper";
 
 const Stars = ({ n }) => (
   <div className="flex gap-0.5">
-    {[1, 2, 3, 4, 5].map((i) => (
+    {[1, 2, 3, 4, 5].map(i) => (
       <Star key={i} className={`h-3.5 w-3.5 ${i <= n ? "fill-warning text-warning" : "text-muted-foreground/30"}`} />
     ))}
   </div>
@@ -13,7 +13,7 @@ const Stars = ({ n }) => (
 const FeedbackView = () => {
   const MOCK = getFeedback();
   const [filter, setFilter] = useState(null);
-  const list = filter ? MOCK.filter((f) => f.rating === filter) : MOCK;
+  const list = filter ? MOCK.filter(f) => f.rating === filter) : MOCK;
   const avg = getAverageRating();
 
   return (
@@ -37,7 +37,7 @@ const FeedbackView = () => {
 
       <div className="px-4 md:px-5 py-3 border-b border-border flex flex-wrap items-center gap-2">
         <span className="text-xs text-muted-foreground mr-1">Filter by rating:</span>
-        {[1, 2, 3, 4, 5].map((r) => (
+        {[1, 2, 3, 4, 5].map(r) => (
           <button
             key={r}
             onClick={() => setFilter(r)}
@@ -59,12 +59,12 @@ const FeedbackView = () => {
         {list.length === 0 ? (
           <li className="p-10 text-center text-sm text-muted-foreground">No feedback yet</li>
         ) : (
-          list.map((f) => (
+          list.map(f) => (
             <li key={f.id} className="px-4 md:px-5 py-3.5 hover:bg-muted/40 transition-colors">
               <div className="flex items-start justify-between gap-3">
                 <div className="flex items-start gap-3">
                   <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center text-xs font-semibold">
-                    {f.user.split(" ").map((p) => p[0]).join("")}
+                    {f.user.split(" ").map(p) => p[0]).join("")}
                   </div>
                   <div>
                     <p className="text-sm font-medium">{f.user}</p>

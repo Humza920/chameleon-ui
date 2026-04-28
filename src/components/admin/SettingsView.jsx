@@ -22,7 +22,7 @@ const SettingsView = () => {
 
   const save = () => {
     setSaving(true);
-    setTimeout(() => setSaving(false), 700);
+    setTimeout() => setSaving(false), 700);
   };
 
   return (

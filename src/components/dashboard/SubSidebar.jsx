@@ -41,13 +41,13 @@ const SubSidebar = ({ item, onMouseEnter, onMouseLeave }) => {
 
           {/* Sections */}
           <div className="flex-1 overflow-y-auto scroll-thin px-2 py-4 space-y-5">
-            {item.sections.map((section) => (
+            {item.sections.map(section) => (
               <div key={section.title}>
                 <p className="px-3 mb-1.5 text-[10.5px] font-semibold uppercase tracking-wider text-subsidebar-muted">
                   {section.title}
                 </p>
                 <ul className="space-y-0.5">
-                  {section.items.map((sub) => (
+                  {section.items.map(sub) => (
                     <li key={sub.label}>
                       <button className="group flex w-full items-center justify-between gap-2 rounded-lg px-3 py-2 text-sm text-subsidebar-foreground transition-all duration-150 hover:bg-sidebar-accent hover:text-white">
                         <span className="flex items-center gap-2 truncate">

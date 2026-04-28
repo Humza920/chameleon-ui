@@ -21,7 +21,7 @@ const DashboardLayout = ({ children }) => {
 
   const activeId = routeMap[location.pathname] || "conversations";
 
-  useEffect(() => {
+  useEffect() => {
     document.documentElement.classList.toggle("dark", dark);
   }, [dark]);
 
@@ -49,7 +49,7 @@ const DashboardLayout = ({ children }) => {
         <Topbar
           stats={stats}
           dark={dark}
-          onToggleDark={() => setDark((d) => !d)}
+          onToggleDark={() => setDark(d) => !d)}
           adminName={admin.name}
         />
 

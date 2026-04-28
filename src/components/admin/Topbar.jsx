@@ -10,7 +10,7 @@ const Topbar = ({ stats, dark, onToggleDark, adminName = "Admin" }) => {
         </div>
 
         <div className="hidden lg:flex items-center gap-2">
-          {stats.map((s) => (
+          {stats.map(s) => (
             <div key={s.label} className="flex items-baseline gap-1.5 px-3 py-1 rounded-md bg-muted/60">
               <span className="text-[11px] uppercase tracking-wide text-muted-foreground">{s.label}</span>
               <span className="text-sm font-semibold text-foreground">{s.value}</span>
@@ -36,7 +36,7 @@ const Topbar = ({ stats, dark, onToggleDark, adminName = "Admin" }) => {
 
       {/* Mobile stats strip */}
       <div className="lg:hidden flex gap-2 overflow-x-auto px-4 pb-3 scroll-thin">
-        {stats.map((s) => (
+        {stats.map(s) => (
           <div key={s.label} className="shrink-0 flex items-baseline gap-1.5 px-3 py-1 rounded-md bg-muted/60">
             <span className="text-[10px] uppercase text-muted-foreground">{s.label}</span>
             <span className="text-xs font-semibold">{s.value}</span>

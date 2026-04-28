@@ -24,7 +24,7 @@ const FeedbackList = () => (
       </span>
     </div>
     <ul className="divide-y divide-border">
-      {FEEDBACK.map((f, i) => (
+      {FEEDBACK.map(f, i) => (
         <li
           key={i}
           className="px-5 py-4 transition-colors hover:bg-muted/40 animate-fade-in"
@@ -35,7 +35,7 @@ const FeedbackList = () => (
             <span className="text-[11px] text-muted-foreground">{f.time}</span>
           </div>
           <div className="mt-1 flex items-center gap-0.5">
-            {[1, 2, 3, 4, 5].map((s) => (
+            {[1, 2, 3, 4, 5].map(s) => (
               <Star key={s} filled={s <= f.rating} />
             ))}
           </div>

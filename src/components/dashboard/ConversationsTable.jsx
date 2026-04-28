@@ -16,7 +16,7 @@ const ROWS = [
   { user: "Bilal S.", channel: "Web Chat", message: "Pricing question for the team plan.", status: "Resolved", time: "5h ago" },
 ];
 
-const initials = (name) => name.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase();
+const initials = (name) => name.split(" ").map(n) => n[0]).join("").slice(0, 2).toUpperCase();
 
 const ConversationsTable = () => {
   return (
@@ -49,7 +49,7 @@ const ConversationsTable = () => {
             </tr>
           </thead>
           <tbody className="divide-y divide-border">
-            {ROWS.map((r, i) => (
+            {ROWS.map(r, i) => (
               <tr key={i} className="group transition-colors hover:bg-muted/50">
                 <td className="px-5 py-3.5">
                   <div className="flex items-center gap-2.5">

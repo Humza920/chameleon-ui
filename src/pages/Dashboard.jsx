@@ -22,7 +22,7 @@ const Dashboard = () => {
   const [dark, setDark] = useState(false);
   const [fullMessage, setFullMessage] = useState(null);
 
-  useEffect(() => {
+  useEffect() => {
     document.documentElement.classList.toggle("dark", dark);
   }, [dark]);
 
@@ -44,13 +44,13 @@ const Dashboard = () => {
         <Topbar
           stats={stats}
           dark={dark}
-          onToggleDark={() => setDark((d) => !d)}
+          onToggleDark={() => setDark(d) => !d)}
           adminName="Ayesha Khan"
         />
 
         {/* Mobile nav tabs */}
         <div className="md:hidden flex border-b border-border bg-card">
-          {MOBILE_NAV.map((n) => {
+          {MOBILE_NAV.map(n) => {
             const Icon = n.icon;
             const isActive = active === n.id;
             return (

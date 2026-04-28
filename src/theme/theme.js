@@ -168,10 +168,10 @@ export const getColor = (mode, colorKey) => {
 };
 
 export const hslToRgb = (hsl) => {
-  const [h, s, l] = hsl.split(" ").map((v) => parseFloat(v));
-  const c = ((100 - Math.abs(2 * l - 100)) / 100) * (s / 100);
+  const [h, s, l] = hsl.split(" ").map(v) => parseFloat(v));
+  const c = (100 - Math.abs(2 * l - 100)) / 100) * (s / 100);
   const hPrime = h / 60;
-  const x = c * (1 - Math.abs((hPrime % 2) - 1));
+  const x = c * (1 - Math.abs(hPrime % 2) - 1));
   let r = 0,
     g = 0,
     b = 0;
@@ -198,8 +198,8 @@ export const hslToRgb = (hsl) => {
 
   const m = (l / 100) - c / 2;
   return {
-    r: Math.round((r + m) * 255),
-    g: Math.round((g + m) * 255),
-    b: Math.round((b + m) * 255),
+    r: Math.round(r + m) * 255),
+    g: Math.round(g + m) * 255),
+    b: Math.round(b + m) * 255),
   };
 };

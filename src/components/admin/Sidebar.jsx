@@ -24,7 +24,7 @@ const Sidebar = ({ activeId, onSelect, onLogout }) => {
           Workspace
         </p>
         <nav className="flex flex-col gap-0.5">
-          {ITEMS.map((item) => {
+          {ITEMS.map(item) => {
             const Icon = item.icon;
             const active = activeId === item.id;
             return (

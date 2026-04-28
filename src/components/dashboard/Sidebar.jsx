@@ -20,12 +20,12 @@ const Sidebar = ({ activeId, onSelect, mobileOpen, onMobileClose }) => {
 
   const schedulePanelClose = () => {
     if (closeTimer.current) clearTimeout(closeTimer.current);
-    closeTimer.current = setTimeout(() => setHoveredId(null), 140);
+    closeTimer.current = setTimeout() => setHoveredId(null), 140);
   };
 
-  useEffect(() => () => closeTimer.current && clearTimeout(closeTimer.current), []);
+  useEffect() => () => closeTimer.current && clearTimeout(closeTimer.current), []);
 
-  const hoveredItem = NAV_ITEMS.find((i) => i.id === hoveredId);
+  const hoveredItem = NAV_ITEMS.find(i) => i.id === hoveredId);
 
   return (
     <>
@@ -54,7 +54,7 @@ const Sidebar = ({ activeId, onSelect, mobileOpen, onMobileClose }) => {
 
           {/* Nav items */}
           <nav className="flex flex-1 flex-col items-center gap-1.5 pt-8">
-            {NAV_ITEMS.map((item) => {
+            {NAV_ITEMS.map(item) => {
               const Icon = item.icon;
               const isActive = activeId === item.id;
               const isHover = hoveredId === item.id;
@@ -94,7 +94,7 @@ const Sidebar = ({ activeId, onSelect, mobileOpen, onMobileClose }) => {
 
           {/* Footer items */}
           <div className="flex flex-col items-center gap-1.5">
-            {FOOTER_ITEMS.map((item) => {
+            {FOOTER_ITEMS.map(item) => {
               const Icon = item.icon;
               return (
                 <button

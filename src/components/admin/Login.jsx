@@ -9,7 +9,7 @@ const Login = ({ onLogin }) => {
   const submit = (e) => {
     e.preventDefault();
     setLoading(true);
-    setTimeout(() => {
+    setTimeout() => {
       setLoading(false);
       onLogin();
     }, 600);

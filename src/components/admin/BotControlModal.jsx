@@ -24,7 +24,7 @@ const BotControlModal = ({ open, onClose }) => {
 
   const save = () => {
     setSaving(true);
-    setTimeout(() => {
+    setTimeout() => {
       setSaving(false);
       onClose();
     }, 700);

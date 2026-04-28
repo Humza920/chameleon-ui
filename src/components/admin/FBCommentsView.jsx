@@ -20,7 +20,7 @@ const FBCommentsView = () => {
   const [start, setStart] = useState("");
   const [end, setEnd] = useState("");
 
-  const list = MOCK.filter((c) => {
+  const list = MOCK.filter(c) => {
     if (query && !c.text.toLowerCase().includes(query.toLowerCase())) return false;
     if (conf && c.confidence !== conf) return false;
     if (readFilter === "unread" && c.read) return false;
@@ -63,7 +63,7 @@ const FBCommentsView = () => {
             <div>
               <p className="text-[10px] uppercase text-muted-foreground mb-1.5">Confidence</p>
               <div className="flex flex-wrap gap-1.5">
-                {["low", "medium", "high"].map((c) => (
+                {["low", "medium", "high"].map(c) => (
                   <button
                     key={c}
                     onClick={() => setConf(c)}
@@ -117,7 +117,7 @@ const FBCommentsView = () => {
               { label: "Low Confidence", value: lowCount },
               { label: "Unread Comments", value: unreadCount },
               { label: "💰 Total Cost", value: `$${totalCost}` },
-            ].map((s) => (
+            ].map(s) => (
               <div key={s.label} className="surface-card p-3">
                 <p className="text-[10px] uppercase text-muted-foreground">{s.label}</p>
                 <p className="text-base font-semibold mt-0.5">{s.value}</p>
@@ -131,7 +131,7 @@ const FBCommentsView = () => {
         {list.length === 0 ? (
           <li className="p-10 text-center text-sm text-muted-foreground">No Facebook comments yet</li>
         ) : (
-          list.map((c) => (
+          list.map(c) => (
             <li key={c.id} className="px-4 md:px-5 py-3.5 hover:bg-muted/40 transition-colors">
               <div className="flex items-start justify-between gap-3">
                 <div className="flex items-start gap-3">
