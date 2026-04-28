@@ -31,7 +31,12 @@ const Sidebar = ({ activeId, onSelect, onLogout }) => {
               <button
                 key={item.id}
                 onClick={() => onSelect(item.id)}
-                className={`nav-item ${active ? "nav-item-active" : ""}`}
+                className={`nav-item 
+    text-black dark:text-white 
+    ${active
+                    ? "nav-item-active bg-primary-soft border-l-2 border-primary"
+                    : "hover:bg-primary-soft"
+                  }`}
               >
                 <Icon className="h-4 w-4" />
                 <span>{item.label}</span>
@@ -47,14 +52,20 @@ const Sidebar = ({ activeId, onSelect, onLogout }) => {
         </p>
         <nav className="flex flex-col gap-0.5">
           <button
+            key="settings"
             onClick={() => onSelect("settings")}
-            className={`nav-item ${activeId === "settings" ? "nav-item-active" : ""}`}
+            className={`nav-item 
+    text-black dark:text-white 
+    ${activeId === "settings"
+                ? "nav-item-active bg-primary-soft border-l-2 border-primary"
+                : "hover:bg-primary-soft"
+              }`}
           >
-            <Settings className="h-4 w-4" />
+            <Settings className="h-4 w-4 " />
             <span>Settings</span>
           </button>
           <button onClick={onLogout} className="nav-item hover:!text-destructive">
-            <LogOut className="h-4 w-4" />
+            <LogOut className={`h-4 w-4 `} />
             <span>Logout</span>
           </button>
         </nav>

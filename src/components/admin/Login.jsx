@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Bot, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
+import { Bot } from "lucide-react";
 
 const Login = ({ onLogin }) => {
   const [email, setEmail] = useState("");
