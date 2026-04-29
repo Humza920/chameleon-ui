@@ -13,7 +13,7 @@ const ConfBadge = ({ level }) => {
 
 const FBCommentsView = () => {
   const MOCK = getFBComments();
-  const [open, setOpen] = useState(true);
+  const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [conf, setConf] = useState(null);
   const [readFilter, setReadFilter] = useState(null);

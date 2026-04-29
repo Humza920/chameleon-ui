@@ -1,20 +1,11 @@
 import { useState } from "react";
 import { Loader2 } from "lucide-react";
-
-const Toggle = ({ checked, onChange }) => (
-  <button
-    onClick={() => onChange(!checked)}
-    className={`relative h-6 w-11 rounded-full transition-colors ${checked ? "bg-accent" : "bg-muted"}`}
-  >
-    <span
-      className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform ${
-        checked ? "translate-x-5" : "translate-x-0.5"
-      }`}
-    />
-  </button>
-);
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import FBBotSettings from "./FBBotSettings";
+import WebBotSettings from "./WebBotSettings";
 
 const SettingsView = () => {
+  const [activeTab, setActiveTab] = useState("fb");
   const [fb, setFb] = useState(true);
   const [web, setWeb] = useState(true);
   const [fallback, setFallback] = useState("");
@@ -29,57 +20,36 @@ const SettingsView = () => {
     <div className="max-w-3xl mx-auto space-y-5">
       <div>
         <h2 className="text-lg font-semibold tracking-tight">Settings</h2>
-        <p className="text-sm text-muted-foreground">Manage bot controls and fallback behavior.</p>
+        <p className="text-sm text-muted-foreground">Manage bot controls and configuration for different platforms.</p>
       </div>
 
       <div className="surface-card">
         <div className="px-5 py-4 border-b border-border">
-          <h3 className="text-sm font-semibold">🤖 Bot Control Settings</h3>
+          <h3 className="text-sm font-semibold">🤖 Bot Configuration</h3>
           <p className="text-[11px] text-muted-foreground mt-0.5">
             FB Bot: <span className={fb ? "text-accent" : "text-destructive"}>{fb ? "ON" : "OFF"}</span> ·
             {" "}Web Bot: <span className={web ? "text-accent" : "text-destructive"}>{web ? "ON" : "OFF"}</span>
           </p>
         </div>
 
-        <div className="p-5 space-y-5">
-          <div className="surface-card p-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <span>📱</span>
-                <p className="text-sm font-semibold">Facebook Bot</p>
-              </div>
-              <Toggle checked={fb} onChange={setFb} />
-            </div>
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <div className="px-5 pt-4">
+            <TabsList>
+              <TabsTrigger value="fb">📱 Facebook Bot</TabsTrigger>
+              <TabsTrigger value="web">💬 Web Chatbot</TabsTrigger>
+            </TabsList>
           </div>
 
-          <div className="surface-card p-4 space-y-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <span>💬</span>
-                <p className="text-sm font-semibold">Web Chatbot</p>
-              </div>
-              <Toggle checked={web} onChange={setWeb} />
-            </div>
+          <div className="p-5">
+            <TabsContent value="fb">
+              <FBBotSettings fb={fb} setFb={setFb} />
+            </TabsContent>
 
-            <div>
-              <label className="block text-xs font-medium mb-1.5">Fallback Message (when bot is OFF)</label>
-              <textarea
-                maxLength={500}
-                value={fallback}
-                onChange={(e) => setFallback(e.target.value)}
-                rows={3}
-                placeholder="We're temporarily unavailable. Please try again later."
-                className="input-base resize-none"
-              />
-              <p className="mt-1 text-[10.5px] text-muted-foreground text-right">{fallback.length}/500</p>
-            </div>
+            <TabsContent value="web">
+              <WebBotSettings web={web} setWeb={setWeb} fallback={fallback} setFallback={setFallback} />
+            </TabsContent>
           </div>
-
-          <div className="text-[11px] text-muted-foreground flex justify-between">
-            <span>Last updated: Never</span>
-            <span>Updated by: —</span>
-          </div>
-        </div>
+        </Tabs>
 
         <div className="px-5 py-3 border-t border-border flex justify-end gap-2">
           <button onClick={save} disabled={saving} className="btn-primary">

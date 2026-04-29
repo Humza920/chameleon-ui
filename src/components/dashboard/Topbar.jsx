@@ -38,7 +38,7 @@ const Topbar = ({ onMenuClick, title, subtitle }) => {
         <div className="ml-1 flex items-center gap-2.5 rounded-xl border border-border bg-card px-2 py-1 shadow-soft-sm">
           <div className="h-7 w-7 rounded-lg bg-gradient-primary" />
           <div className="hidden sm:block pr-2">
-            <p className="text-xs font-semibold leading-tight">Ayesha Khan</p>
+            <p className="text-xs font-semibold leading-tight">Zuhair Khan</p>
             <p className="text-[10.5px] text-muted-foreground leading-tight">Admin</p>
           </div>
         </div>

@@ -1,9 +1,9 @@
 {
   "admin": {
     "id": 1,
-    "name": "Ayesha Khan",
+    "name": "Zuhair Khan",
     "role": "admin",
-    "email": "ayesha@admin.com"
+    "email": "Zuhair@admin.com"
   },
   "stats": [
     { "label": "Sessions", "value": "2847" },
