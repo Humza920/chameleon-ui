@@ -17,17 +17,6 @@ const RoutesPage = () => {
 
       {/* ================= PROTECTED DASHBOARD ROUTES ================= */}
       <Route
-        path="/dashboard"
-        element={
-          <ProtectRoute>
-            <DashboardLayout>
-              <ChatsPage />
-            </DashboardLayout>
-          </ProtectRoute>
-        }
-      />
-
-      <Route
         path="/dashboard/chats"
         element={
           <ProtectRoute>

@@ -188,17 +188,15 @@ const FBCommentsView = () => {
                       {/* USER INFO */}
                       <div className="flex items-center gap-2 flex-wrap">
                         <p className="text-sm font-medium">{c.user}</p>
-
-                        {/* 🔥 CONFIDENCE BADGE (high / medium / low) */}
                         <ConfBadge level={c.confidence} />
                       </div>
 
                       {/* USER COMMENT */}
                       <p className="mt-1 text-sm text-foreground/80">{c.text}</p>
 
-                      {/* BOT REPLY */}
+                      {/* BOT REPLY (BELOW COMMENT) */}
                       {c.reply && (
-                        <div className="mt-2 ml-6 border-l-2 border-primary pl-3">
+                        <div className="mt-3 ml-6 border-l-2 border-primary pl-3">
                           <p className="text-[11px] text-primary font-medium">🤖 Bot Reply</p>
                           <p className="text-sm text-foreground">{c.reply}</p>
                         </div>
@@ -208,18 +206,40 @@ const FBCommentsView = () => {
                   </div>
 
                   {/* RIGHT SIDE */}
-                  <div className="flex flex-col items-end justify-between shrink-0 min-h-[80px]">
+                  <div className="flex flex-col items-end justify-between shrink-0 min-h-[85px]">
 
                     {/* TOP RIGHT */}
-                    <div className="text-right">
+                    <div className="text-right flex flex-col items-end gap-1">
+
                       <p className="text-xs font-medium text-muted-foreground">{c.date}</p>
                       <p className="text-xs font-medium text-muted-foreground">
                         ${c.cost.toFixed(3)}
                       </p>
 
+                      <span className="text-[11px] px-2 py-0.5 rounded bg-muted border border-border capitalize">
+                        {c.confidence}
+                      </span>
+
+                      {/* ✅ GREEN READ TAG (if already read) */}
+                      {c.read && (
+                        <span className="text-[10px] px-2 py-0.5 rounded bg-green-500/10 text-green-600 border border-green-500/30">
+                          Read
+                        </span>
+                      )}
+
                     </div>
 
-                    {/* 🔥 BOTTOM RIGHT BUTTONS */}
+                    {/* ✅ MARK AS READ BUTTON (ONLY IF NOT READ) */}
+                    {!c.read && (
+                      <button
+                        onClick={() => console.log("Mark as read:", c.id)}
+                        className="text-[10px] mt-2 px-2 py-1 rounded border border-border text-primary hover:bg-muted"
+                      >
+                        ✓ Mark as Read
+                      </button>
+                    )}
+
+                    {/* BOTTOM RIGHT BUTTONS */}
                     <div className="flex gap-1 mt-2">
 
                       {/* Delete Reply */}
