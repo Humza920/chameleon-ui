@@ -28,6 +28,17 @@ const RoutesPage = () => {
       />
 
       <Route
+        path="/dashboard"
+        element={
+          <ProtectRoute>
+            <DashboardLayout>
+              <ChatsPage />
+            </DashboardLayout>
+          </ProtectRoute>
+        }
+      />
+
+      <Route
         path="/dashboard/feedback"
         element={
           <ProtectRoute>

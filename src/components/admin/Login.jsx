@@ -1,19 +1,37 @@
-import { useState } from "react";
-import { Loader2 } from "lucide-react";
-import { Bot } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Loader2, Bot } from "lucide-react";
+import { useLoginMutation } from "../../redux/servives/index";
+import { useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
+import Cookies from "js-cookie";
 
-const Login = ({ onLogin }) => {
+const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [login, { isLoading: loading }] = useLoginMutation();
+  const navigate = useNavigate();
 
-  const submit = (e) => {
+  useEffect(() => {
+    const token = Cookies.get("access_token");
+    if (token) {
+      navigate("/dashboard", { replace: true });
+    }
+  }, [navigate]);
+
+  const submit = async (e) => {
     e.preventDefault();
-    setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
-      onLogin();
-    }, 600);
+    try {
+      const response = await login({ email, password }).unwrap();
+      if (response.access_token) {
+        localStorage.setItem("user", JSON.stringify({ role: "admin", email }));
+        Cookies.set("access_token", response.access_token, { expires: 1 });
+      }
+      toast.success("Login successful!");
+      navigate("/dashboard", { replace: true });
+    } catch (err) {
+      toast.error(err?.data?.error || err?.data?.detail || "Login failed");
+      console.error("Login failed:", err);
+    }
   };
 
   return (

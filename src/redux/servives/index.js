@@ -1,12 +1,13 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
+import Cookies from "js-cookie";
 
-const API_BASE = "https://saylanimit-chatbot.vercel.app"; // Aapka API base URL
+const API_BASE = "https://9shklwjh-5000.asse.devtunnels.ms"; // Based on the API documentation
 
 // Base query with authentication
 const baseQuery = fetchBaseQuery({
   baseUrl: API_BASE,
   prepareHeaders: (headers, { getState }) => {
-    const token = localStorage.getItem("admin_token");
+    const token = Cookies.get("access_token");
     if (token) {
       headers.set("Authorization", `Bearer ${token}`);
     }
@@ -20,7 +21,7 @@ const customBaseQuery = async (args, api, extraOptions) => {
   const result = await baseQuery(args, api, extraOptions);
   
   if (result.error?.status === 401) {
-    localStorage.removeItem("admin_token");
+    Cookies.remove("access_token");
     window.location.reload();
   }
   
@@ -41,34 +42,20 @@ export const api = createApi({
       }),
       transformResponse: (response) => {
         if (response.access_token) {
-          localStorage.setItem("admin_token", response.access_token);
+          Cookies.set("access_token", response.access_token, { expires: 1 }); // 1 day expiry
         }
         return response;
       },
     }),
 
-    // ============ STATS ============
     getStats: builder.query({
       query: () => '/admin/stats',
       providesTags: ['Stats'],
-      transformResponse: (response) => {
-        const data = response?.data || response;
-        return {
-          totalMessages: Number(data?.total_messages ?? data?.totalMessages ?? data?.messages ?? 0),
-          totalFeedback: Number(data?.total_feedback ?? data?.totalFeedback ?? data?.feedback ?? 0),
-          totalSessions: Number(data?.total_sessions ?? data?.total_session ?? data?.totalSessions ?? 0),
-        };
-      },
     }),
 
     getTokenStats: builder.query({
       query: () => '/admin/token-stats',
       providesTags: ['Stats'],
-      transformResponse: (response) => ({
-        totalTokens: Number(response?.total_tokens ?? 0),
-        totalCost: Number(response?.total_cost ?? 0),
-        formattedCost: response?.formatted_cost ?? `$${0}`,
-      }),
     }),
 
     // ============ CONVERSATIONS / USERS ============

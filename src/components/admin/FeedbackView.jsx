@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { Star } from "lucide-react";
-import { getFeedback, getAverageRating } from "@/helper";
+import { Star, Loader2 } from "lucide-react";
+import { useGetFeedbackQuery } from "@/redux/servives/index";
 
 const Stars = ({ n }) => (
   <div className="flex gap-0.5">
@@ -11,10 +11,15 @@ const Stars = ({ n }) => (
 );
 
 const FeedbackView = () => {
-  const MOCK = getFeedback();
   const [filter, setFilter] = useState(null);
-  const list = filter ? MOCK.filter((f) => f.rating === filter) : MOCK;
-  const avg = getAverageRating();
+  const { data, isLoading } = useGetFeedbackQuery({ limit: 100, offset: 0, ratings: filter ? filter.toString() : '' });
+  
+  const list = data?.feedback || [];
+  const total = data?.total || 0;
+  
+  const avg = list.length > 0 
+    ? (list.reduce((sum, f) => sum + f.rating, 0) / list.length).toFixed(1) 
+    : "0.0";
 
   return (
     <section className="surface-card">
@@ -30,7 +35,7 @@ const FeedbackView = () => {
           </div>
           <div className="text-right">
             <p className="text-[10px] uppercase text-muted-foreground">Total</p>
-            <p className="text-base font-semibold">{MOCK.length}</p>
+            <p className="text-base font-semibold">{total}</p>
           </div>
         </div>
       </div>
@@ -56,7 +61,12 @@ const FeedbackView = () => {
       </div>
 
       <ul className="divide-y divide-border">
-        {list.length === 0 ? (
+        {isLoading ? (
+          <li className="p-10 flex flex-col items-center justify-center text-center">
+            <Loader2 className="h-6 w-6 text-muted-foreground/40 animate-spin mb-2" />
+            <p className="text-sm text-muted-foreground">Loading feedback...</p>
+          </li>
+        ) : list.length === 0 ? (
           <li className="p-10 text-center text-sm text-muted-foreground">No feedback yet</li>
         ) : (
           list.map((f) => (
@@ -64,15 +74,17 @@ const FeedbackView = () => {
               <div className="flex items-start justify-between gap-3">
                 <div className="flex items-start gap-3">
                   <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center text-xs font-semibold">
-                    {f.user.split(" ").map((p) => p[0]).join("")}
+                    {f.user_id ? f.user_id.slice(0, 2).toUpperCase() : "?"}
                   </div>
                   <div>
-                    <p className="text-sm font-medium">{f.user}</p>
+                    <p className="text-sm font-medium">{f.user_id || "Unknown User"}</p>
                     <Stars n={f.rating} />
-                    <p className="mt-1 text-sm text-foreground/80">{f.text}</p>
+                    <p className="mt-1 text-sm text-foreground/80">{f.feedback || f.text}</p>
                   </div>
                 </div>
-                <span className="text-[11px] text-muted-foreground shrink-0">{f.time}</span>
+                <span className="text-[11px] text-muted-foreground shrink-0">
+                  {f.created_at ? new Date(f.created_at).toLocaleDateString() : f.time}
+                </span>
               </div>
             </li>
           ))

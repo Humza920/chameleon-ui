@@ -1,0 +1,1119 @@
+# Admin Panel API Documentation
+
+## Table of Contents
+1. [Authentication](#authentication)
+2. [Chat Management](#chat-management)
+3. [Feedback Management](#feedback-management)
+4. [User Management](#user-management)
+5. [Statistics](#statistics)
+6. [Bot Settings](#bot-settings)
+7. [Facebook Comments Management](#facebook-comments-management)
+
+---
+
+## Base URL
+```
+http://localhost:8000
+```
+
+## Authentication
+All endpoints (except login) require an `Authorization` header with a Bearer token obtained from the login endpoint.
+
+```
+Authorization: Bearer {access_token}
+```
+
+---
+
+# Authentication
+
+## 1. Admin Login
+
+**Endpoint:** `POST /admin/login`
+
+**Description:** Authenticate admin user and receive access token
+
+**Request Headers:**
+```
+Content-Type: application/json
+```
+
+**Request Body:**
+```json
+{
+  "email": "admin@example.com",
+  "password": "your_password"
+}
+```
+
+**Body Parameters:**
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| email | string | Yes | Admin email address |
+| password | string | Yes | Admin password |
+
+**Success Response (200):**
+```json
+{
+  "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+}
+```
+
+**Error Response (400):**
+```json
+{
+  "error": "Invalid credentials"
+}
+```
+
+**Error Response (500):**
+```json
+{
+  "detail": "Login error"
+}
+```
+
+---
+
+## 2. Secure Test (Verify Token)
+
+**Endpoint:** `GET /admin/secure-test`
+
+**Description:** Test endpoint to verify admin authentication
+
+**Request Headers:**
+```
+Authorization: Bearer {access_token}
+```
+
+**Success Response (200):**
+```json
+{
+  "msg": "Admin authenticated successfully"
+}
+```
+
+**Error Response (401):**
+```json
+{
+  "detail": "Not authenticated"
+}
+```
+
+---
+
+# Chat Management
+
+## 1. Get All Chats
+
+**Endpoint:** `GET /admin/chats`
+
+**Description:** Get paginated chat history for admin dashboard
+
+**Request Headers:**
+```
+Authorization: Bearer {access_token}
+```
+
+**Query Parameters:**
+| Parameter | Type | Required | Default | Description |
+|-----------|------|----------|---------|-------------|
+| limit | integer | No | 20 | Number of records per page (1-999) |
+| offset | integer | No | 0 | Pagination offset (must be ≥ 0) |
+| user_id | string | No | null | Filter by exact user ID |
+| search_user_id | string | No | null | Search for user IDs (case-insensitive pattern matching) |
+
+**Success Response (200):**
+```json
+{
+  "data": [
+    {
+      "id": "chat-123",
+      "user_id": "user@example.com",
+      "message": "Hello, how are you?",
+      "role": "user",
+      "timestamp": "2026-04-29T10:30:00Z",
+      "total_tokens": 150,
+      "cost": 0.0015
+    },
+    {
+      "id": "chat-124",
+      "user_id": "user@example.com",
+      "message": "I'm doing great!",
+      "role": "assistant",
+      "timestamp": "2026-04-29T10:30:05Z",
+      "total_tokens": 200,
+      "cost": 0.002
+    }
+  ],
+  "limit": 20,
+  "offset": 0,
+  "total": 150,
+  "page_count": 2,
+  "has_more": true
+}
+```
+
+**Example Request:**
+```
+GET /admin/chats?limit=20&offset=0
+GET /admin/chats?limit=20&offset=0&user_id=user123
+GET /admin/chats?limit=20&offset=0&search_user_id=user
+```
+
+---
+
+## 2. Get Chats by User ID
+
+**Endpoint:** `GET /admin/chats`
+
+**Description:** Get chat history for a specific user
+
+**Request Headers:**
+```
+Authorization: Bearer {access_token}
+```
+
+**Query Parameters:**
+| Parameter | Type | Required | Default | Description |
+|-----------|------|----------|---------|-------------|
+| limit | integer | No | 20 | Number of records per page |
+| offset | integer | No | 0 | Pagination offset |
+| user_id | string | Yes | - | Exact user ID to filter |
+
+**Success Response (200):**
+```json
+{
+  "data": [
+    {
+      "id": "chat-123",
+      "user_id": "user123",
+      "message": "What is machine learning?",
+      "role": "user",
+      "timestamp": "2026-04-29T10:15:00Z",
+      "total_tokens": 120,
+      "cost": 0.0012
+    }
+  ],
+  "limit": 20,
+  "offset": 0,
+  "total": 5,
+  "page_count": 1,
+  "has_more": false
+}
+```
+
+**Example Request:**
+```
+GET /admin/chats?limit=20&offset=0&user_id=user123
+```
+
+---
+
+## 3. Search Chats by User ID
+
+**Endpoint:** `GET /admin/chats`
+
+**Description:** Search chat history using pattern matching on user IDs
+
+**Request Headers:**
+```
+Authorization: Bearer {access_token}
+```
+
+**Query Parameters:**
+| Parameter | Type | Required | Default | Description |
+|-----------|------|----------|---------|-------------|
+| limit | integer | No | 20 | Number of records per page |
+| offset | integer | No | 0 | Pagination offset |
+| search_user_id | string | Yes | - | Search pattern (case-insensitive) |
+
+**Success Response (200):**
+```json
+{
+  "data": [
+    {
+      "id": "chat-456",
+      "user_id": "user_demo_123",
+      "message": "Tell me more",
+      "role": "user",
+      "timestamp": "2026-04-29T09:45:00Z",
+      "total_tokens": 100,
+      "cost": 0.001
+    },
+    {
+      "id": "chat-457",
+      "user_id": "user_test_456",
+      "message": "Show example",
+      "role": "user",
+      "timestamp": "2026-04-29T09:50:00Z",
+      "total_tokens": 110,
+      "cost": 0.0011
+    }
+  ],
+  "limit": 20,
+  "offset": 0,
+  "total": 12,
+  "page_count": 2,
+  "has_more": true
+}
+```
+
+**Example Request:**
+```
+GET /admin/chats?limit=20&offset=0&search_user_id=user_demo
+```
+
+---
+
+# Feedback Management
+
+## 1. Get All Feedback
+
+**Endpoint:** `GET /admin/feedback`
+
+**Description:** Get paginated feedback for admin dashboard
+
+**Request Headers:**
+```
+Authorization: Bearer {access_token}
+```
+
+**Query Parameters:**
+| Parameter | Type | Required | Default | Description |
+|-----------|------|----------|---------|-------------|
+| limit | integer | No | 20 | Number of records per page (1-999) |
+| offset | integer | No | 0 | Pagination offset |
+| user_id | string | No | null | Filter by specific user ID |
+| ratings | string | No | null | Comma-separated rating values (1-5) |
+
+**Success Response (200):**
+```json
+{
+  "data": [
+    {
+      "id": "feedback-1",
+      "user_id": "user@example.com",
+      "rating": 5,
+      "feedback": "Excellent service, very helpful!",
+      "created_at": "2026-04-29T08:30:00Z"
+    },
+    {
+      "id": "feedback-2",
+      "user_id": "user2@example.com",
+      "rating": 4,
+      "feedback": "Good, but needs improvement in response time",
+      "created_at": "2026-04-29T08:25:00Z"
+    }
+  ],
+  "limit": 20,
+  "offset": 0,
+  "total": 45,
+  "page_count": 2,
+  "has_more": true
+}
+```
+
+**Example Request:**
+```
+GET /admin/feedback?limit=20&offset=0
+```
+
+---
+
+## 2. Get Feedback by User ID
+
+**Endpoint:** `GET /admin/feedback`
+
+**Description:** Get feedback from a specific user
+
+**Request Headers:**
+```
+Authorization: Bearer {access_token}
+```
+
+**Query Parameters:**
+| Parameter | Type | Required | Default | Description |
+|-----------|------|----------|---------|-------------|
+| limit | integer | No | 20 | Number of records per page |
+| offset | integer | No | 0 | Pagination offset |
+| user_id | string | Yes | - | Filter by specific user ID |
+
+**Success Response (200):**
+```json
+{
+  "data": [
+    {
+      "id": "feedback-1",
+      "user_id": "user123",
+      "rating": 5,
+      "feedback": "Very helpful and accurate responses",
+      "created_at": "2026-04-29T07:15:00Z"
+    },
+    {
+      "id": "feedback-2",
+      "user_id": "user123",
+      "rating": 4,
+      "feedback": "Good but could be faster",
+      "created_at": "2026-04-28T15:30:00Z"
+    }
+  ],
+  "limit": 20,
+  "offset": 0,
+  "total": 2,
+  "page_count": 1,
+  "has_more": false
+}
+```
+
+**Example Request:**
+```
+GET /admin/feedback?limit=20&offset=0&user_id=user123
+```
+
+---
+
+## 3. Get Feedback by Rating
+
+**Endpoint:** `GET /admin/feedback`
+
+**Description:** Get feedback filtered by specific ratings
+
+**Request Headers:**
+```
+Authorization: Bearer {access_token}
+```
+
+**Query Parameters:**
+| Parameter | Type | Required | Default | Description |
+|-----------|------|----------|---------|-------------|
+| limit | integer | No | 20 | Number of records per page |
+| offset | integer | No | 0 | Pagination offset |
+| ratings | string | Yes | - | Comma-separated rating values (e.g., "1,2,3") |
+
+**Validation Rules:**
+- Ratings must be comma-separated integers
+- Each rating must be between 1 and 5
+- Invalid format returns 400 error
+
+**Success Response (200):**
+```json
+{
+  "data": [
+    {
+      "id": "feedback-10",
+      "user_id": "user_low1",
+      "rating": 1,
+      "feedback": "Not helpful at all",
+      "created_at": "2026-04-28T12:00:00Z"
+    },
+    {
+      "id": "feedback-11",
+      "user_id": "user_low2",
+      "rating": 2,
+      "feedback": "Could be better",
+      "created_at": "2026-04-28T11:45:00Z"
+    }
+  ],
+  "limit": 20,
+  "offset": 0,
+  "total": 8,
+  "page_count": 1,
+  "has_more": false
+}
+```
+
+**Error Response (400):**
+```json
+{
+  "detail": "ratings must be comma-separated integers"
+}
+```
+
+**Error Response (400):**
+```json
+{
+  "detail": "ratings must be between 1 and 5"
+}
+```
+
+**Example Request:**
+```
+GET /admin/feedback?limit=20&offset=0&ratings=1,2
+GET /admin/feedback?limit=20&offset=0&ratings=5
+GET /admin/feedback?limit=20&offset=0&ratings=4,5
+```
+
+---
+
+# User Management
+
+## 1. Get All Users
+
+**Endpoint:** `GET /admin/users`
+
+**Description:** Get list of users with their latest message info (for sidebar rendering)
+
+**Request Headers:**
+```
+Authorization: Bearer {access_token}
+```
+
+**Query Parameters:**
+| Parameter | Type | Required | Default | Description |
+|-----------|------|----------|---------|-------------|
+| limit | integer | No | 10 | Maximum number of users (1-50) |
+
+**Success Response (200):**
+```json
+{
+  "data": [
+    {
+      "user_id": "user@example.com",
+      "last_message": "Thanks for the help!",
+      "last_message_time": "2026-04-29T10:45:00Z"
+    },
+    {
+      "user_id": "user2@example.com",
+      "last_message": "Can you explain this?",
+      "last_message_time": "2026-04-29T10:30:00Z"
+    },
+    {
+      "user_id": "user3@example.com",
+      "last_message": "What about this?",
+      "last_message_time": "2026-04-29T10:15:00Z"
+    }
+  ]
+}
+```
+
+**Example Request:**
+```
+GET /admin/users?limit=10
+GET /admin/users?limit=25
+```
+
+---
+
+# Statistics
+
+## 1. Get Dashboard Stats
+
+**Endpoint:** `GET /admin/stats`
+
+**Description:** Get comprehensive statistics for admin dashboard
+
+**Request Headers:**
+```
+Authorization: Bearer {access_token}
+```
+
+**Success Response (200):**
+```json
+{
+  "total_messages": 1250,
+  "total_feedback": 340,
+  "total_sessions": 95
+}
+```
+
+**Response Fields:**
+| Field | Type | Description |
+|-------|------|-------------|
+| total_messages | integer | Total number of chat messages |
+| total_feedback | integer | Total number of feedback submissions |
+| total_sessions | integer | Total number of unique user sessions |
+
+**Example Request:**
+```
+GET /admin/stats
+```
+
+---
+
+## 2. Get Token & Cost Stats
+
+**Endpoint:** `GET /admin/token-stats`
+
+**Description:** Get token usage and cost statistics from all chat messages
+
+**Request Headers:**
+```
+Authorization: Bearer {access_token}
+```
+
+**Success Response (200):**
+```json
+{
+  "total_tokens": 125000,
+  "total_cost": 1.2500,
+  "formatted_cost": "$1.2500"
+}
+```
+
+**Response Fields:**
+| Field | Type | Description |
+|-------|------|-------------|
+| total_tokens | integer | Total tokens used across all messages |
+| total_cost | float | Total cost in dollars |
+| formatted_cost | string | Formatted cost string (e.g., "$1.2500") |
+
+**Notes:**
+- Only counts messages with tokens > 0
+- Cost is calculated in dollars
+
+**Example Request:**
+```
+GET /admin/token-stats
+```
+
+---
+
+# Bot Settings
+
+## 1. Get Bot Settings
+
+**Endpoint:** `GET /admin/bot-settings`
+
+**Description:** Get current bot settings including ON/OFF status and fallback messages
+
+**Request Headers:**
+```
+Authorization: Bearer {access_token}
+```
+
+**Success Response (200):**
+```json
+{
+  "id": "settings-1",
+  "fb_bot_enabled": true,
+  "web_bot_enabled": true,
+  "web_fallback_message": "Sorry, I'm currently unavailable. Please try again later.",
+  "updated_at": "2026-04-29T09:00:00Z",
+  "updated_by": "admin@example.com"
+}
+```
+
+**Response Fields:**
+| Field | Type | Description |
+|-------|------|-------------|
+| id | string | Settings ID |
+| fb_bot_enabled | boolean | Is Facebook bot enabled? |
+| web_bot_enabled | boolean | Is Web bot enabled? |
+| web_fallback_message | string | Fallback message when bot is disabled |
+| updated_at | string | Last update timestamp |
+| updated_by | string | Email of admin who updated settings |
+
+**Example Request:**
+```
+GET /admin/bot-settings
+```
+
+---
+
+## 2. Update Bot Settings
+
+**Endpoint:** `POST /admin/bot-settings`
+
+**Description:** Update bot settings including enable/disable status and fallback messages
+
+**Request Headers:**
+```
+Authorization: Bearer {access_token}
+Content-Type: application/json
+```
+
+**Request Body:**
+```json
+{
+  "fb_bot_enabled": true,
+  "web_bot_enabled": false,
+  "web_fallback_message": "Sorry, the bot is currently unavailable. Please try again later."
+}
+```
+
+**Body Parameters:**
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| fb_bot_enabled | boolean | Yes | Enable/disable Facebook bot |
+| web_bot_enabled | boolean | Yes | Enable/disable Web bot |
+| web_fallback_message | string | Yes | Fallback message when bot is disabled |
+
+**Success Response (200):**
+```json
+{
+  "id": "settings-1",
+  "fb_bot_enabled": true,
+  "web_bot_enabled": false,
+  "web_fallback_message": "Sorry, the bot is currently unavailable. Please try again later.",
+  "updated_at": "2026-04-29T11:30:00Z",
+  "updated_by": "admin@example.com"
+}
+```
+
+**Error Response (400):**
+```json
+{
+  "detail": "Validation error message"
+}
+```
+
+**Error Response (500):**
+```json
+{
+  "detail": "Error updating bot settings"
+}
+```
+
+**Example Request:**
+```
+POST /admin/bot-settings
+Content-Type: application/json
+
+{
+  "fb_bot_enabled": true,
+  "web_bot_enabled": true,
+  "web_fallback_message": "Bot temporarily unavailable"
+}
+```
+
+---
+
+# Facebook Comments Management
+
+## 1. Get All FB Comments
+
+**Endpoint:** `GET /admin/fb-comments`
+
+**Description:** Get Facebook comments with advanced filtering options
+
+**Request Headers:**
+```
+Authorization: Bearer {access_token}
+```
+
+**Query Parameters:**
+| Parameter | Type | Required | Default | Description |
+|-----------|------|----------|---------|-------------|
+| limit | integer | No | 20 | Number of records per page |
+| offset | integer | No | 0 | Pagination offset |
+| confidence_bucket | string | No | null | Filter: "low", "medium", or "high" |
+| min_confidence | float | No | null | Minimum confidence (0-1) |
+| max_confidence | float | No | null | Maximum confidence (0-1) |
+| status | string | No | null | Filter by status |
+| include_deleted | boolean | No | false | Include deleted comments |
+| search_query | string | No | null | Search in comment text |
+| start_date | string | No | null | Start date for filtering (ISO format) |
+| end_date | string | No | null | End date for filtering (ISO format) |
+| read_status | string | No | null | Filter: "read" or "unread" |
+
+**Validation Rules:**
+- `confidence_bucket` must be one of: low, medium, high
+- `min_confidence` must be ≤ `max_confidence`
+- `start_date` must be ≤ `end_date`
+- `read_status` must be "read" or "unread"
+
+**Success Response (200):**
+```json
+{
+  "data": [
+    {
+      "id": "comment-1",
+      "comment_id": "fb_123456",
+      "comment_text": "Is this service available?",
+      "post_id": "post_789",
+      "bot_response": "Yes, the service is available 24/7",
+      "confidence_score": 0.95,
+      "status": "responded",
+      "is_read": true,
+      "read_by": "admin@example.com",
+      "read_at": "2026-04-29T10:00:00Z",
+      "created_at": "2026-04-29T09:30:00Z",
+      "reply_comment_id": "reply_456",
+      "is_deleted": false
+    }
+  ],
+  "limit": 20,
+  "offset": 0,
+  "total": 156,
+  "page_count": 8,
+  "has_more": true
+}
+```
+
+**Response Fields:**
+| Field | Type | Description |
+|-------|------|-------------|
+| id | string | Database record ID |
+| comment_id | string | Facebook comment ID |
+| comment_text | string | Original comment text |
+| post_id | string | Facebook post ID |
+| bot_response | string | Bot's response to comment |
+| confidence_score | float | Confidence of bot response (0-1) |
+| status | string | Comment status (e.g., "responded", "pending") |
+| is_read | boolean | Has admin read this comment? |
+| read_by | string | Admin email who read it |
+| read_at | string | When admin read it |
+| created_at | string | When comment was created |
+| reply_comment_id | string | ID of bot's reply comment |
+| is_deleted | boolean | Is comment deleted? |
+
+**Example Requests:**
+```
+GET /admin/fb-comments?limit=20&offset=0
+GET /admin/fb-comments?limit=20&offset=0&confidence_bucket=high
+GET /admin/fb-comments?limit=20&offset=0&read_status=unread
+GET /admin/fb-comments?limit=20&offset=0&min_confidence=0.8&max_confidence=1.0
+GET /admin/fb-comments?limit=20&offset=0&search_query=pricing
+GET /admin/fb-comments?limit=20&offset=0&start_date=2026-04-01&end_date=2026-04-29
+```
+
+---
+
+## 2. Get FB Comments - High Confidence Only
+
+**Endpoint:** `GET /admin/fb-comments`
+
+**Description:** Get high confidence Facebook comments
+
+**Request Headers:**
+```
+Authorization: Bearer {access_token}
+```
+
+**Query Parameters:**
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| limit | integer | No | Number of records per page |
+| offset | integer | No | Pagination offset |
+| confidence_bucket | string | Yes | Must be "high" |
+
+**Success Response (200):**
+```json
+{
+  "data": [
+    {
+      "id": "comment-1",
+      "comment_id": "fb_123456",
+      "comment_text": "What are the pricing plans?",
+      "confidence_score": 0.98,
+      "status": "responded",
+      "is_read": false,
+      "created_at": "2026-04-29T09:30:00Z"
+    }
+  ],
+  "limit": 20,
+  "offset": 0,
+  "total": 45,
+  "page_count": 3,
+  "has_more": true
+}
+```
+
+**Example Request:**
+```
+GET /admin/fb-comments?limit=20&offset=0&confidence_bucket=high
+```
+
+---
+
+## 3. Get Unread FB Comments
+
+**Endpoint:** `GET /admin/fb-comments`
+
+**Description:** Get unread Facebook comments
+
+**Request Headers:**
+```
+Authorization: Bearer {access_token}
+```
+
+**Query Parameters:**
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| limit | integer | No | Number of records per page |
+| offset | integer | No | Pagination offset |
+| read_status | string | Yes | Must be "unread" |
+
+**Success Response (200):**
+```json
+{
+  "data": [
+    {
+      "id": "comment-5",
+      "comment_id": "fb_789012",
+      "comment_text": "How do I get started?",
+      "confidence_score": 0.85,
+      "status": "responded",
+      "is_read": false,
+      "created_at": "2026-04-29T11:00:00Z"
+    },
+    {
+      "id": "comment-6",
+      "comment_id": "fb_345678",
+      "comment_text": "Is there a free trial?",
+      "confidence_score": 0.92,
+      "status": "responded",
+      "is_read": false,
+      "created_at": "2026-04-29T10:45:00Z"
+    }
+  ],
+  "limit": 20,
+  "offset": 0,
+  "total": 12,
+  "page_count": 1,
+  "has_more": false
+}
+```
+
+**Example Request:**
+```
+GET /admin/fb-comments?limit=20&offset=0&read_status=unread
+```
+
+---
+
+## 4. Delete FB Comment (Reply Only)
+
+**Endpoint:** `DELETE /admin/fb-comments/{comment_id}`
+
+**Description:** Delete only the bot's reply to a Facebook comment (keep original comment)
+
+**Request Headers:**
+```
+Authorization: Bearer {access_token}
+```
+
+**Path Parameters:**
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| comment_id | string | Yes | Facebook comment ID to delete from |
+
+**Query Parameters:**
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| delete_type | string | Yes | Must be "reply_only" |
+
+**Success Response (200):**
+```json
+{
+  "success": true,
+  "comment_id": "fb_123456",
+  "delete_type": "reply_only",
+  "deleted_by": "admin@example.com"
+}
+```
+
+**Error Response (400):**
+```json
+{
+  "detail": "No reply found to delete"
+}
+```
+
+**Error Response (400):**
+```json
+{
+  "detail": "Could not fetch comment data"
+}
+```
+
+**Example Request:**
+```
+DELETE /admin/fb-comments/fb_123456?delete_type=reply_only
+```
+
+---
+
+## 5. Delete FB Comment (Both)
+
+**Endpoint:** `DELETE /admin/fb-comments/{comment_id}`
+
+**Description:** Delete both the original Facebook comment and the bot's reply
+
+**Request Headers:**
+```
+Authorization: Bearer {access_token}
+```
+
+**Path Parameters:**
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| comment_id | string | Yes | Facebook comment ID to delete |
+
+**Query Parameters:**
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| delete_type | string | Yes | Must be "both" |
+
+**Success Response (200):**
+```json
+{
+  "success": true,
+  "comment_id": "fb_123456",
+  "delete_type": "both",
+  "deleted_by": "admin@example.com"
+}
+```
+
+**Error Response (400):**
+```json
+{
+  "detail": "Error message about deletion failure"
+}
+```
+
+**Example Request:**
+```
+DELETE /admin/fb-comments/fb_123456?delete_type=both
+```
+
+---
+
+## 6. Mark FB Comment as Read
+
+**Endpoint:** `PATCH /admin/fb-comments/{comment_id}/read`
+
+**Description:** Mark a Facebook comment as read by the admin
+
+**Request Headers:**
+```
+Authorization: Bearer {access_token}
+```
+
+**Path Parameters:**
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| comment_id | string | Yes | Facebook comment ID to mark as read |
+
+**Success Response (200):**
+```json
+{
+  "success": true,
+  "comment_id": "fb_123456",
+  "is_read": true,
+  "read_by": "admin@example.com",
+  "read_at": "2026-04-29T11:45:30Z"
+}
+```
+
+**Error Response (400):**
+```json
+{
+  "detail": "Failed to mark comment as read"
+}
+```
+
+**Error Response (500):**
+```json
+{
+  "detail": "Error marking comment as read"
+}
+```
+
+**Example Request:**
+```
+PATCH /admin/fb-comments/fb_123456/read
+```
+
+---
+
+## Error Codes Summary
+
+| Status Code | Description |
+|------------|-------------|
+| 200 | Success |
+| 400 | Bad Request (validation error, invalid parameters) |
+| 401 | Unauthorized (missing or invalid token) |
+| 403 | Forbidden (insufficient permissions) |
+| 404 | Not Found (resource doesn't exist) |
+| 500 | Internal Server Error |
+
+---
+
+## Common Error Responses
+
+**Invalid Token:**
+```json
+{
+  "detail": "Not authenticated"
+}
+```
+
+**Expired Token:**
+```json
+{
+  "detail": "Token has expired"
+}
+```
+
+**Missing Token:**
+```json
+{
+  "detail": "Not authenticated"
+}
+```
+
+**Rate Limit Exceeded:**
+```json
+{
+  "detail": "Rate limit exceeded"
+}
+```
+
+---
+
+## Authentication Example
+
+**Step 1: Login to get token**
+```bash
+curl -X POST http://localhost:8000/admin/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"admin@example.com","password":"password123"}'
+```
+
+Response:
+```json
+{
+  "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+}
+```
+
+**Step 2: Use token in requests**
+```bash
+curl -X GET http://localhost:8000/admin/stats \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+```
+
+---
+
+## Pagination Guidelines
+
+For all paginated endpoints:
+- Default limit: 20
+- Default offset: 0
+- Response includes: `limit`, `offset`, `total`, `page_count`, `has_more`
+
+**Example pagination:**
+```
+GET /admin/chats?limit=20&offset=0      # Page 1 (items 1-20)
+GET /admin/chats?limit=20&offset=20     # Page 2 (items 21-40)
+GET /admin/chats?limit=20&offset=40     # Page 3 (items 41-60)
+```
+
+---
+
+## Rate Limiting
+
+All endpoints are rate-limited to prevent abuse. Headers in response:
+```
+X-RateLimit-Limit: 100
+X-RateLimit-Remaining: 95
+X-RateLimit-Reset: 1609459200
+```
+
+---
+
+**Documentation Version:** 1.0  
+**Last Updated:** April 29, 2026  
+**API Version:** v1

@@ -3,7 +3,8 @@ import { useLocation, useNavigate } from "react-router-dom";
 import Sidebar from "@/components/admin/Sidebar";
 import Topbar from "@/components/admin/Topbar";
 import MessageModal from "@/components/admin/MessageModal";
-import { getStats, getAdmin } from "@/helper";
+import { getAdmin } from "@/helper";
+import { useGetStatsQuery, useGetTokenStatsQuery } from "@/redux/servives/index";
 
 const DashboardLayout = ({ children }) => {
   const location = useLocation();
@@ -35,8 +36,20 @@ const DashboardLayout = ({ children }) => {
     navigate(routeMap[tabId]);
   };
 
-  const stats = getStats();
+  const { data: apiStats } = useGetStatsQuery();
+  const { data: tokenStats } = useGetTokenStatsQuery();
+
   const admin = getAdmin();
+  const userString = localStorage.getItem("user");
+  const userData = userString ? JSON.parse(userString) : { email: "admin@example.com" };
+  const adminName = userData.email?.split("@")[0] || admin.name;
+
+  const stats = [
+    { label: "Sessions", value: apiStats?.total_sessions ?? "..." },
+    { label: "Chats", value: apiStats?.total_messages ?? "..." },
+    { label: "Feedback", value: apiStats?.total_feedback ?? "..." },
+    { label: "Tokens", value: tokenStats?.total_tokens ?? "..." },
+  ];
 
   return (
     <div className="flex h-screen w-full bg-background overflow-hidden">
@@ -50,7 +63,7 @@ const DashboardLayout = ({ children }) => {
           stats={stats}
           dark={dark}
           onToggleDark={() => setDark((d) => !d)}
-          adminName={admin.name}
+          adminName={adminName}
         />
 
         <main className="flex-1 min-h-0 overflow-auto bg-background">

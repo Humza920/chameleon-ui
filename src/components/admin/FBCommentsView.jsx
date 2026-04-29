@@ -1,6 +1,7 @@
-import { useState } from "react";
-import { Search, ChevronDown, ChevronUp, Facebook } from "lucide-react";
-import { getFBComments, getTotalFBCommentsCost, getUnreadFBCommentsCount, getLowConfidenceFBCommentsCount } from "@/helper";
+import { useState, useEffect } from "react";
+import { Search, ChevronDown, ChevronUp, Facebook, Loader2 } from "lucide-react";
+import { useGetFBCommentsQuery, useMarkFBCommentAsReadMutation, useDeleteFBCommentMutation } from "@/redux/servives/index";
+import toast from "react-hot-toast";
 
 const ConfBadge = ({ level }) => {
   const map = {
@@ -24,7 +25,6 @@ const Checkbox = ({ checked, onChange }) => (
 );
 
 const FBCommentsView = () => {
-  const MOCK = getFBComments();
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [conf, setConf] = useState(null);
@@ -33,44 +33,72 @@ const FBCommentsView = () => {
   const [end, setEnd] = useState("");
   const [selectMode, setSelectMode] = useState(false);
   const [selected, setSelected] = useState(new Set());
-  const [dropdownOpen, setDropdownOpen] = useState(false);
 
-  const list = MOCK.filter((c) => {
-    if (query && !c.text.toLowerCase().includes(query.toLowerCase())) return false;
-    if (conf && c.confidence !== conf) return false;
-    if (readFilter === "unread" && c.read) return false;
-    if (readFilter === "read" && !c.read) return false;
-    if (start && c.date < start) return false;
-    if (end && c.date > end) return false;
-    return true;
+  const [debouncedQuery, setDebouncedQuery] = useState("");
+
+  useEffect(() => {
+    const handler = setTimeout(() => setDebouncedQuery(query), 500);
+    return () => clearTimeout(handler);
+  }, [query]);
+
+  const { data, isLoading } = useGetFBCommentsQuery({
+    limit: 100,
+    offset: 0,
+    confidenceBucket: conf || '',
+    readStatus: readFilter || '',
+    searchQuery: debouncedQuery || '',
+    startDate: start || '',
+    endDate: end || ''
   });
 
-  const totalCost = getTotalFBCommentsCost();
-  const lowCount = getLowConfidenceFBCommentsCount();
-  const unreadCount = getUnreadFBCommentsCount();
+  const [markAsReadMutation] = useMarkFBCommentAsReadMutation();
+  const [deleteCommentMutation] = useDeleteFBCommentMutation();
+
+  const list = data?.comments || [];
+
+  const totalCost = list.reduce((sum, c) => sum + (c.cost || 0), 0).toFixed(3);
+  const lowCount = list.filter((c) => (c.confidence_score || 0) < 0.4).length;
+  const unreadCount = list.filter((c) => !c.is_read).length;
 
   const toggleSelect = (id) => {
     const newSelected = new Set(selected);
-    if (newSelected.has(id)) {
-      newSelected.delete(id);
-    } else {
-      newSelected.add(id);
-    }
+    if (newSelected.has(id)) newSelected.delete(id);
+    else newSelected.add(id);
     setSelected(newSelected);
   };
 
-  const selectAll = () => {
-    setSelected(new Set(list.map((c) => c.id)));
+  const selectAll = () => setSelected(new Set(list.map((c) => c.comment_id)));
+
+  const deleteSelected = async () => {
+    const toastId = toast.loading("Deleting comments...");
+    try {
+      for (const id of Array.from(selected)) {
+        await deleteCommentMutation({ commentId: id, deleteType: "both" }).unwrap();
+      }
+      toast.success("Comments deleted successfully", { id: toastId });
+      setSelected(new Set());
+    } catch (error) {
+      toast.error("Failed to delete comments", { id: toastId });
+    }
   };
 
-  const deleteSelected = () => {
-    console.log("Deleting:", Array.from(selected));
-    setSelected(new Set());
+  const markAsReadSelected = async () => {
+    const toastId = toast.loading("Marking as read...");
+    try {
+      for (const id of Array.from(selected)) {
+        await markAsReadMutation(id).unwrap();
+      }
+      toast.success("Comments marked as read", { id: toastId });
+      setSelected(new Set());
+    } catch (error) {
+      toast.error("Failed to mark as read", { id: toastId });
+    }
   };
 
-  const markAsReadSelected = () => {
-    console.log("Marking as read:", Array.from(selected));
-    setSelected(new Set());
+  const getConfidenceLevel = (score) => {
+    if (score >= 0.8) return "high";
+    if (score >= 0.4) return "medium";
+    return "low";
   };
 
   return (
@@ -149,7 +177,7 @@ const FBCommentsView = () => {
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
             {[
-              { label: "Total FB Comments", value: MOCK.length },
+              { label: "Total FB Comments", value: data?.total ?? list.length },
               { label: "Low Confidence", value: lowCount },
               { label: "Unread Comments", value: unreadCount },
               { label: "💰 Total Cost", value: `$${totalCost}` },
@@ -165,21 +193,28 @@ const FBCommentsView = () => {
 
       <div className="overflow-y-auto max-h-[340px] custom-scroll pr-1">
         <ul className="divide-y divide-border">
-          {list.length === 0 ? (
+          {isLoading ? (
+            <li className="p-10 flex flex-col items-center justify-center text-center">
+              <Loader2 className="h-6 w-6 text-muted-foreground/40 animate-spin mb-2" />
+              <p className="text-sm text-muted-foreground">Loading comments...</p>
+            </li>
+          ) : list.length === 0 ? (
             <li className="p-10 text-center text-sm text-muted-foreground">No Facebook comments yet</li>
           ) : (
-            list.map((c) => (
-              <li key={c.id} className="px-4 md:px-5 py-3.5 hover:bg-muted/40 transition-colors">
+            list.map((c) => {
+              const confLevel = getConfidenceLevel(c.confidence_score || 0);
+              return (
+              <li key={c.comment_id || c.id} className="px-4 md:px-5 py-3.5 hover:bg-muted/40 transition-colors">
                 <div className="flex items-start justify-between gap-3">
 
                   {selectMode && (
-                    <Checkbox checked={selected.has(c.id)} onChange={() => toggleSelect(c.id)} />
+                    <Checkbox checked={selected.has(c.comment_id)} onChange={() => toggleSelect(c.comment_id)} />
                   )}
 
                   {/* LEFT SIDE */}
                   <div className="flex items-start gap-3 flex-1">
                     <span
-                      className={`mt-1.5 h-2 w-2 rounded-full shrink-0 ${c.read ? "bg-muted-foreground/30" : "bg-destructive"
+                      className={`mt-1.5 h-2 w-2 rounded-full shrink-0 ${c.is_read ? "bg-muted-foreground/30" : "bg-destructive"
                         }`}
                     />
 
@@ -187,18 +222,18 @@ const FBCommentsView = () => {
 
                       {/* USER INFO */}
                       <div className="flex items-center gap-2 flex-wrap">
-                        <p className="text-sm font-medium">{c.user}</p>
-                        <ConfBadge level={c.confidence} />
+                        <p className="text-sm font-medium">{c.commenter_name || "FB User"}</p>
+                        <ConfBadge level={confLevel} />
                       </div>
 
                       {/* USER COMMENT */}
-                      <p className="mt-1 text-sm text-foreground/80">{c.text}</p>
+                      <p className="mt-1 text-sm text-foreground/80">{c.user_comment}</p>
 
                       {/* BOT REPLY (BELOW COMMENT) */}
-                      {c.reply && (
+                      {c.bot_reply && (
                         <div className="mt-3 ml-6 border-l-2 border-primary pl-3">
                           <p className="text-[11px] text-primary font-medium">🤖 Bot Reply</p>
-                          <p className="text-sm text-foreground">{c.reply}</p>
+                          <p className="text-sm text-foreground">{c.bot_reply}</p>
                         </div>
                       )}
 
@@ -211,17 +246,21 @@ const FBCommentsView = () => {
                     {/* TOP RIGHT */}
                     <div className="text-right flex flex-col items-end gap-1">
 
-                      <p className="text-xs font-medium text-muted-foreground">{c.date}</p>
                       <p className="text-xs font-medium text-muted-foreground">
-                        ${c.cost.toFixed(3)}
+                        {c.created_at ? new Date(c.created_at).toLocaleDateString() : ""}
                       </p>
+                      {c.cost !== undefined && (
+                        <p className="text-xs font-medium text-muted-foreground">
+                          ${c.cost.toFixed(3)}
+                        </p>
+                      )}
 
                       <span className="text-[11px] px-2 py-0.5 rounded bg-muted border border-border capitalize">
-                        {c.confidence}
+                      Confidence {c.confidence_score}%
                       </span>
 
                       {/* ✅ GREEN READ TAG (if already read) */}
-                      {c.read && (
+                      {c.is_read && (
                         <span className="text-[10px] px-2 py-0.5 rounded bg-green-500/10 text-green-600 border border-green-500/30">
                           Read
                         </span>
@@ -230,9 +269,17 @@ const FBCommentsView = () => {
                     </div>
 
                     {/* ✅ MARK AS READ BUTTON (ONLY IF NOT READ) */}
-                    {!c.read && (
+                    {!c.is_read && (
                       <button
-                        onClick={() => console.log("Mark as read:", c.id)}
+                        onClick={async () => {
+                          const tid = toast.loading("Marking as read...");
+                          try {
+                            await markAsReadMutation(c.comment_id).unwrap();
+                            toast.success("Marked as read", { id: tid });
+                          } catch (e) {
+                            toast.error("Failed to mark as read", { id: tid });
+                          }
+                        }}
                         className="text-[10px] mt-2 px-2 py-1 rounded border border-border text-primary hover:bg-muted"
                       >
                         ✓ Mark as Read
@@ -243,9 +290,17 @@ const FBCommentsView = () => {
                     <div className="flex gap-1 mt-2">
 
                       {/* Delete Reply */}
-                      {c.reply && (
+                      {c.bot_reply && (
                         <button
-                          onClick={() => console.log("Delete reply:", c.id)}
+                          onClick={async () => {
+                            const tid = toast.loading("Deleting reply...");
+                            try {
+                              await deleteCommentMutation({ commentId: c.comment_id, deleteType: "reply_only" }).unwrap();
+                              toast.success("Reply deleted", { id: tid });
+                            } catch (e) {
+                              toast.error("Failed to delete reply", { id: tid });
+                            }
+                          }}
                           className="text-[10px] px-2 py-1 rounded border border-border text-warning hover:bg-muted"
                         >
                           ❌ Delete Reply
@@ -254,7 +309,15 @@ const FBCommentsView = () => {
 
                       {/* Delete Comment */}
                       <button
-                        onClick={() => console.log("Delete comment:", c.id)}
+                        onClick={async () => {
+                          const tid = toast.loading("Deleting comment...");
+                          try {
+                            await deleteCommentMutation({ commentId: c.comment_id, deleteType: "both" }).unwrap();
+                            toast.success("Comment deleted", { id: tid });
+                          } catch (e) {
+                            toast.error("Failed to delete comment", { id: tid });
+                          }
+                        }}
                         className="text-[10px] px-2 py-1 rounded border border-border text-destructive hover:bg-muted"
                       >
                         🗑️ Delete Comment
@@ -265,7 +328,8 @@ const FBCommentsView = () => {
                   </div>
                 </div>
               </li>
-            ))
+            );
+            })
           )}
         </ul>
       </div>

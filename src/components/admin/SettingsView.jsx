@@ -1,19 +1,42 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Loader2 } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import FBBotSettings from "./FBBotSettings";
 import WebBotSettings from "./WebBotSettings";
+import { useGetBotSettingsQuery, useUpdateBotSettingsMutation } from "@/redux/servives/index";
+import toast from "react-hot-toast";
 
 const SettingsView = () => {
   const [activeTab, setActiveTab] = useState("fb");
+
+  const { data, isLoading } = useGetBotSettingsQuery();
+  const [updateSettings, { isLoading: isUpdating }] = useUpdateBotSettingsMutation();
+
   const [fb, setFb] = useState(true);
   const [web, setWeb] = useState(true);
   const [fallback, setFallback] = useState("");
-  const [saving, setSaving] = useState(false);
 
-  const save = () => {
-    setSaving(true);
-    setTimeout(() => setSaving(false), 700);
+  useEffect(() => {
+    if (data) {
+      setFb(data.fb_bot_enabled ?? true);
+      setWeb(data.web_bot_enabled ?? true);
+      setFallback(data.web_fallback_message ?? "");
+    }
+  }, [data]);
+
+  const save = async () => {
+    const tid = toast.loading("Saving settings...");
+    try {
+      await updateSettings({
+        fb_bot_enabled: fb,
+        web_bot_enabled: web,
+        web_fallback_message: fallback
+      }).unwrap();
+      toast.success("Settings saved successfully", { id: tid });
+    } catch (e) {
+      toast.error("Failed to save settings", { id: tid });
+      console.error("Failed to save settings:", e);
+    }
   };
 
   return (
@@ -52,9 +75,9 @@ const SettingsView = () => {
         </Tabs>
 
         <div className="px-5 py-3 border-t border-border flex justify-end gap-2">
-          <button onClick={save} disabled={saving} className="btn-primary">
-            {saving && <Loader2 className="h-4 w-4 animate-spin" />}
-            {saving ? "Saving…" : "Save Settings"}
+          <button onClick={save} disabled={isUpdating || isLoading} className="btn-primary">
+            {isUpdating && <Loader2 className="h-4 w-4 animate-spin" />}
+            {isUpdating ? "Saving…" : "Save Settings"}
           </button>
         </div>
       </div>
