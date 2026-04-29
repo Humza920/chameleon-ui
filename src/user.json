@@ -84,42 +84,46 @@
       "time": "2d ago"
     }
   ],
-  "fbcomments": [
-    {
-      "id": 1,
-      "user": "John D.",
-      "text": "When does the next batch start?",
-      "confidence": "high",
-      "read": false,
-      "date": "2026-04-25",
-      "cost": 0.004
-    },
-    {
-      "id": 2,
-      "user": "Mariam K.",
-      "text": "Is there a refund policy?",
-      "confidence": "low",
-      "read": false,
-      "date": "2026-04-24",
-      "cost": 0.006
-    },
-    {
-      "id": 3,
-      "user": "Ahmed R.",
-      "text": "Course price?",
-      "confidence": "medium",
-      "read": true,
-      "date": "2026-04-23",
-      "cost": 0.003
-    },
-    {
-      "id": 4,
-      "user": "Zara F.",
-      "text": "How to enroll?",
-      "confidence": "high",
-      "read": true,
-      "date": "2026-04-22",
-      "cost": 0.005
-    }
-  ]
+"fbcomments": [
+  {
+    "id": 1,
+    "user": "John D.",
+    "text": "When does the next batch start?",
+    "reply": "Next batch starts from May 1st. You can register now.",
+    "confidence": "high",
+    "read": false,
+    "date": "2026-04-25",
+    "cost": 0.004
+  },
+  {
+    "id": 2,
+    "user": "Mariam K.",
+    "text": "Is there a refund policy?",
+    "reply": "Yes, we offer a 7-day refund policy after enrollment.",
+    "confidence": "low",
+    "read": false,
+    "date": "2026-04-24",
+    "cost": 0.006
+  },
+  {
+    "id": 3,
+    "user": "Ahmed R.",
+    "text": "Course price?",
+    "reply": "The course price is $50.",
+    "confidence": "medium",
+    "read": true,
+    "date": "2026-04-23",
+    "cost": 0.003
+  },
+  {
+    "id": 4,
+    "user": "Zara F.",
+    "text": "How to enroll?",
+    "reply": "Click on the enroll button on our website and fill the form.",
+    "confidence": "high",
+    "read": true,
+    "date": "2026-04-22",
+    "cost": 0.005
+  }
+]
 }

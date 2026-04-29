@@ -11,6 +11,18 @@ const ConfBadge = ({ level }) => {
   return <span className={`chip ${map[level]} capitalize`}>{level}</span>;
 };
 
+const Checkbox = ({ checked, onChange }) => (
+  <button
+    onClick={() => onChange(!checked)}
+    className={`h-5 w-5 rounded border-2 transition-all flex items-center justify-center shrink-0 ${checked
+      ? "bg-accent border-accent"
+      : "border-muted-foreground hover:border-accent"
+      }`}
+  >
+    {checked && <span className="text-xs font-bold text-accent-foreground">✓</span>}
+  </button>
+);
+
 const FBCommentsView = () => {
   const MOCK = getFBComments();
   const [open, setOpen] = useState(false);
@@ -19,6 +31,9 @@ const FBCommentsView = () => {
   const [readFilter, setReadFilter] = useState(null);
   const [start, setStart] = useState("");
   const [end, setEnd] = useState("");
+  const [selectMode, setSelectMode] = useState(false);
+  const [selected, setSelected] = useState(new Set());
+  const [dropdownOpen, setDropdownOpen] = useState(false);
 
   const list = MOCK.filter((c) => {
     if (query && !c.text.toLowerCase().includes(query.toLowerCase())) return false;
@@ -33,6 +48,30 @@ const FBCommentsView = () => {
   const totalCost = getTotalFBCommentsCost();
   const lowCount = getLowConfidenceFBCommentsCount();
   const unreadCount = getUnreadFBCommentsCount();
+
+  const toggleSelect = (id) => {
+    const newSelected = new Set(selected);
+    if (newSelected.has(id)) {
+      newSelected.delete(id);
+    } else {
+      newSelected.add(id);
+    }
+    setSelected(newSelected);
+  };
+
+  const selectAll = () => {
+    setSelected(new Set(list.map((c) => c.id)));
+  };
+
+  const deleteSelected = () => {
+    console.log("Deleting:", Array.from(selected));
+    setSelected(new Set());
+  };
+
+  const markAsReadSelected = () => {
+    console.log("Marking as read:", Array.from(selected));
+    setSelected(new Set());
+  };
 
   return (
     <section className="surface-card">
@@ -67,9 +106,8 @@ const FBCommentsView = () => {
                   <button
                     key={c}
                     onClick={() => setConf(c)}
-                    className={`px-2.5 py-1 rounded-md text-xs font-medium border capitalize transition-colors ${
-                      conf === c ? "bg-primary text-primary-foreground border-primary" : "bg-card border-border hover:bg-muted"
-                    }`}
+                    className={`px-2.5 py-1 rounded-md text-xs font-medium border capitalize transition-colors ${conf === c ? "bg-primary text-primary-foreground border-primary" : "bg-card border-border hover:bg-muted"
+                      }`}
                   >
                     {c}
                   </button>
@@ -83,17 +121,15 @@ const FBCommentsView = () => {
               <div className="flex flex-wrap gap-1.5">
                 <button
                   onClick={() => setReadFilter("unread")}
-                  className={`px-2.5 py-1 rounded-md text-xs font-medium border transition-colors ${
-                    readFilter === "unread" ? "bg-primary text-primary-foreground border-primary" : "bg-card border-border hover:bg-muted"
-                  }`}
+                  className={`px-2.5 py-1 rounded-md text-xs font-medium border transition-colors ${readFilter === "unread" ? "bg-primary text-primary-foreground border-primary" : "bg-card border-border hover:bg-muted"
+                    }`}
                 >
                   🔴 Unread
                 </button>
                 <button
                   onClick={() => setReadFilter("read")}
-                  className={`px-2.5 py-1 rounded-md text-xs font-medium border transition-colors ${
-                    readFilter === "read" ? "bg-primary text-primary-foreground border-primary" : "bg-card border-border hover:bg-muted"
-                  }`}
+                  className={`px-2.5 py-1 rounded-md text-xs font-medium border transition-colors ${readFilter === "read" ? "bg-primary text-primary-foreground border-primary" : "bg-card border-border hover:bg-muted"
+                    }`}
                 >
                   ✅ Read
                 </button>
@@ -127,35 +163,135 @@ const FBCommentsView = () => {
         </div>
       )}
 
-      <ul className="divide-y divide-border">
-        {list.length === 0 ? (
-          <li className="p-10 text-center text-sm text-muted-foreground">No Facebook comments yet</li>
-        ) : (
-          list.map((c) => (
-            <li key={c.id} className="px-4 md:px-5 py-3.5 hover:bg-muted/40 transition-colors">
-              <div className="flex items-start justify-between gap-3">
-                <div className="flex items-start gap-3">
-                  <span className={`mt-1.5 h-2 w-2 rounded-full shrink-0 ${c.read ? "bg-muted-foreground/30" : "bg-destructive"}`} />
-                  <div>
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <p className="text-sm font-medium">{c.user}</p>
-                      <ConfBadge level={c.confidence} />
+      <div className="overflow-y-auto max-h-[340px] custom-scroll pr-1">
+        <ul className="divide-y divide-border">
+          {list.length === 0 ? (
+            <li className="p-10 text-center text-sm text-muted-foreground">No Facebook comments yet</li>
+          ) : (
+            list.map((c) => (
+              <li key={c.id} className="px-4 md:px-5 py-3.5 hover:bg-muted/40 transition-colors">
+                <div className="flex items-start justify-between gap-3">
+
+                  {selectMode && (
+                    <Checkbox checked={selected.has(c.id)} onChange={() => toggleSelect(c.id)} />
+                  )}
+
+                  {/* LEFT SIDE */}
+                  <div className="flex items-start gap-3 flex-1">
+                    <span
+                      className={`mt-1.5 h-2 w-2 rounded-full shrink-0 ${c.read ? "bg-muted-foreground/30" : "bg-destructive"
+                        }`}
+                    />
+
+                    <div className="flex-1">
+
+                      {/* USER INFO */}
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <p className="text-sm font-medium">{c.user}</p>
+
+                        {/* 🔥 CONFIDENCE BADGE (high / medium / low) */}
+                        <ConfBadge level={c.confidence} />
+                      </div>
+
+                      {/* USER COMMENT */}
+                      <p className="mt-1 text-sm text-foreground/80">{c.text}</p>
+
+                      {/* BOT REPLY */}
+                      {c.reply && (
+                        <div className="mt-2 ml-6 border-l-2 border-primary pl-3">
+                          <p className="text-[11px] text-primary font-medium">🤖 Bot Reply</p>
+                          <p className="text-sm text-foreground">{c.reply}</p>
+                        </div>
+                      )}
+
                     </div>
-                    <p className="mt-1 text-sm text-foreground/80">{c.text}</p>
+                  </div>
+
+                  {/* RIGHT SIDE */}
+                  <div className="flex flex-col items-end justify-between shrink-0 min-h-[80px]">
+
+                    {/* TOP RIGHT */}
+                    <div className="text-right">
+                      <p className="text-xs font-medium text-muted-foreground">{c.date}</p>
+                      <p className="text-xs font-medium text-muted-foreground">
+                        ${c.cost.toFixed(3)}
+                      </p>
+
+                    </div>
+
+                    {/* 🔥 BOTTOM RIGHT BUTTONS */}
+                    <div className="flex gap-1 mt-2">
+
+                      {/* Delete Reply */}
+                      {c.reply && (
+                        <button
+                          onClick={() => console.log("Delete reply:", c.id)}
+                          className="text-[10px] px-2 py-1 rounded border border-border text-warning hover:bg-muted"
+                        >
+                          ❌ Delete Reply
+                        </button>
+                      )}
+
+                      {/* Delete Comment */}
+                      <button
+                        onClick={() => console.log("Delete comment:", c.id)}
+                        className="text-[10px] px-2 py-1 rounded border border-border text-destructive hover:bg-muted"
+                      >
+                        🗑️ Delete Comment
+                      </button>
+
+                    </div>
+
                   </div>
                 </div>
-                <div className="text-right shrink-0">
-                  <p className="text-[11px] text-muted-foreground">{c.date}</p>
-                  <p className="text-[11px] text-muted-foreground">${c.cost.toFixed(3)}</p>
-                </div>
-              </div>
-            </li>
-          ))
-        )}
-      </ul>
+              </li>
+            ))
+          )}
+        </ul>
+      </div>
 
       <div className="px-4 md:px-5 py-3 border-t border-border flex justify-between flex-wrap gap-2">
-        <button className="btn-secondary !py-1.5 text-xs">✅ Mark All as Read</button>
+        {!selectMode ? (
+          <button
+            onClick={() => setSelectMode(true)}
+            className="btn-secondary !py-1.5 text-xs"
+          >
+            📋 Select
+          </button>
+        ) : (
+          <div className="flex gap-2 flex-wrap">
+            <button
+              onClick={selectAll}
+              className="btn-secondary !py-1.5 text-xs"
+            >
+              ✓ Select All
+            </button>
+            <button
+              onClick={markAsReadSelected}
+              disabled={selected.size === 0}
+              className="btn-secondary !py-1.5 text-xs disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              ✅ Mark as Read
+            </button>
+            <button
+              onClick={deleteSelected}
+              disabled={selected.size === 0}
+              className="btn-secondary !py-1.5 text-xs text-destructive disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              🗑️ Delete
+            </button>
+            <button
+              onClick={() => {
+                setSelectMode(false);
+                setSelected(new Set());
+              }}
+              className="btn-ghost !py-1.5 text-xs"
+            >
+              Cancel
+            </button>
+          </div>
+        )}
+
         <button className="btn-secondary !py-1.5 text-xs">Load More</button>
       </div>
     </section>
