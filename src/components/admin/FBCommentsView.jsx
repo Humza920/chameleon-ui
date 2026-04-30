@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Search, ChevronDown, ChevronUp, Send, Loader2 } from "lucide-react";
+import { Search, ChevronDown, ChevronUp, Send, Loader2, Bot, Trash, Check, X, ExternalLink, MoreVertical } from "lucide-react";
 import { useGetFBCommentsQuery, useMarkFBCommentAsReadMutation, useDeleteFBCommentMutation } from "@/redux/servives/index";
 import toast from "react-hot-toast";
 
@@ -33,6 +33,13 @@ const FBCommentsView = () => {
   const [end, setEnd] = useState("");
   const [selectMode, setSelectMode] = useState(false);
   const [selected, setSelected] = useState(new Set());
+  const [openDropdownId, setOpenDropdownId] = useState(null);
+
+  useEffect(() => {
+    const handleClickOutside = () => setOpenDropdownId(null);
+    document.addEventListener("click", handleClickOutside);
+    return () => document.removeEventListener("click", handleClickOutside);
+  }, []);
 
   const [offset, setOffset] = useState(0);
 
@@ -94,7 +101,12 @@ const FBCommentsView = () => {
   const markAsReadSelected = async () => {
     const toastId = toast.loading("Marking as read...");
     try {
-      for (const id of Array.from(selected)) {
+      const unreadIds = Array.from(selected).filter(id => {
+        const item = list.find(c => c.comment_id === id || c.id === id);
+        return item && !item.is_read;
+      });
+
+      for (const id of unreadIds) {
         await markAsReadMutation(id).unwrap();
       }
       toast.success("Comments marked as read", { id: toastId });
@@ -111,11 +123,11 @@ const FBCommentsView = () => {
   };
 
   return (
-    <section className="surface-card">
+    <section className="surface-card flex flex-col h-full">
       <div className="px-4 md:px-5 py-4 border-b border-border flex items-center justify-between gap-3">
         <div className="flex items-center gap-2">
           <Send className="h-4 w-4 text-primary" />
-          <h2 className="text-sm font-semibold">Send Comments</h2>
+          <h2 className="text-sm font-semibold">Facebook Comments</h2>
         </div>
         <button onClick={() => setOpen(!open)} className="btn-ghost !text-xs">
           {open ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
@@ -200,9 +212,9 @@ const FBCommentsView = () => {
         </div>
       )}
 
-      <div className="overflow-y-auto max-h-[340px] custom-scroll pr-1">
+      <div className="flex-1 min-h-0 overflow-y-auto custom-scroll pr-1">
         <ul className="divide-y divide-border">
-          {isLoading ? (
+          {(isFetching && offset === 0) ? (
             <li className="p-10 flex flex-col items-center justify-center text-center">
               <Loader2 className="h-6 w-6 text-muted-foreground/40 animate-spin mb-2" />
               <p className="text-sm text-muted-foreground">Loading comments...</p>
@@ -213,132 +225,170 @@ const FBCommentsView = () => {
             list.map((c) => {
               const confLevel = getConfidenceLevel(c.confidence_score || 0);
               return (
-              <li key={c.comment_id || c.id} className="px-4 md:px-5 py-3.5 hover:bg-muted/40 transition-colors">
-                <div className="flex items-start justify-between gap-3">
+                <li key={c.comment_id || c.id} className="px-4 md:px-5 py-3.5 hover:bg-muted/40 transition-colors">
+                  <div className="flex items-start justify-between gap-3">
 
-                  {selectMode && (
-                    <Checkbox checked={selected.has(c.comment_id)} onChange={() => toggleSelect(c.comment_id)} />
-                  )}
-
-                  {/* LEFT SIDE */}
-                  <div className="flex items-start gap-3 flex-1">
-                    <span
-                      className={`mt-1.5 h-2 w-2 rounded-full shrink-0 ${c.is_read ? "bg-muted-foreground/30" : "bg-destructive"
-                        }`}
-                    />
-
-                    <div className="flex-1">
-
-                      {/* USER INFO */}
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <p className="text-sm font-medium">{c.commenter_name || "FB User"}</p>
-                        <ConfBadge level={confLevel} />
-                      </div>
-
-                      {/* USER COMMENT */}
-                      <p className="mt-1 text-sm text-foreground/80">{c.user_comment}</p>
-
-                      {/* BOT REPLY (BELOW COMMENT) */}
-                      {c.bot_reply && (
-                        <div className="mt-3 ml-6 border-l-2 border-primary pl-3">
-                          <p className="text-[11px] text-primary font-medium">🤖 Bot Reply</p>
-                          <p className="text-sm text-foreground">{c.bot_reply}</p>
-                        </div>
-                      )}
-
-                    </div>
-                  </div>
-
-                  {/* RIGHT SIDE */}
-                  <div className="flex flex-col items-end justify-between shrink-0 min-h-[85px]">
-
-                    {/* TOP RIGHT */}
-                    <div className="text-right flex flex-col items-end gap-1">
-
-                      <p className="text-xs font-medium text-muted-foreground">
-                        {c.created_at ? new Date(c.created_at).toLocaleDateString() : ""}
-                      </p>
-                      {c.cost !== undefined && (
-                        <p className="text-xs font-medium text-muted-foreground">
-                          ${c.cost.toFixed(3)}
-                        </p>
-                      )}
-
-                      <span className="text-[11px] px-2 py-0.5 rounded bg-muted border border-border capitalize">
-                      Confidence {c.confidence_score}%
-                      </span>
-
-                      {/* ✅ GREEN READ TAG (if already read) */}
-                      {c.is_read && (
-                        <span className="text-[10px] px-2 py-0.5 rounded bg-green-500/10 text-green-600 border border-green-500/30">
-                          Read
-                        </span>
-                      )}
-
-                    </div>
-
-                    {/* ✅ MARK AS READ BUTTON (ONLY IF NOT READ) */}
-                    {!c.is_read && (
-                      <button
-                        onClick={async () => {
-                          const tid = toast.loading("Marking as read...");
-                          try {
-                            await markAsReadMutation(c.comment_id).unwrap();
-                            toast.success("Marked as read", { id: tid });
-                          } catch (e) {
-                            toast.error("Failed to mark as read", { id: tid });
-                          }
-                        }}
-                        className="text-[10px] mt-2 px-2 py-1 rounded border border-border text-primary hover:bg-muted"
-                      >
-                        ✓ Mark as Read
-                      </button>
+                    {selectMode && (
+                      <Checkbox checked={selected.has(c.comment_id)} onChange={() => toggleSelect(c.comment_id)} />
                     )}
 
-                    {/* BOTTOM RIGHT BUTTONS */}
-                    <div className="flex gap-1 mt-2">
+                    {/* LEFT SIDE */}
+                    <div className="flex items-start gap-3 flex-1">
+                      <div className="relative mt-1.5 flex h-2 w-2 shrink-0">
+                        {!c.is_read && (
+                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+                        )}
+                        <span
+                          className={`relative inline-flex rounded-full h-2 w-2 ${
+                            c.is_read ? "bg-muted-foreground/30" : "bg-primary"
+                          }`}
+                        />
+                      </div>
 
-                      {/* Delete Reply */}
-                      {c.bot_reply && (
-                        <button
-                          onClick={async () => {
-                            const tid = toast.loading("Deleting reply...");
-                            try {
-                              await deleteCommentMutation({ commentId: c.comment_id, deleteType: "reply_only" }).unwrap();
-                              toast.success("Reply deleted", { id: tid });
-                            } catch (e) {
-                              toast.error("Failed to delete reply", { id: tid });
-                            }
-                          }}
-                          className="text-[10px] px-2 py-1 rounded border border-border text-warning hover:bg-muted"
-                        >
-                          ❌ Delete Reply
-                        </button>
-                      )}
+                      <div className="flex-1">
 
-                      {/* Delete Comment */}
-                      <button
-                        onClick={async () => {
-                          const tid = toast.loading("Deleting comment...");
-                          try {
-                            await deleteCommentMutation({ commentId: c.comment_id, deleteType: "both" }).unwrap();
-                            toast.success("Comment deleted", { id: tid });
-                          } catch (e) {
-                            toast.error("Failed to delete comment", { id: tid });
-                          }
-                        }}
-                        className="text-[10px] px-2 py-1 rounded border border-border text-destructive hover:bg-muted"
-                      >
-                        🗑️ Delete Comment
-                      </button>
+                        {/* USER INFO */}
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <p className="text-sm font-medium">{c.commenter_name || "FB User"}</p>
+                          <ConfBadge level={confLevel} />
+                        </div>
 
+                        {/* USER COMMENT */}
+                        <p className="mt-1 text-sm text-foreground/80">{c.user_comment}</p>
+
+                        {/* BOT REPLY (BELOW COMMENT) */}
+                        {c.bot_reply && (
+                          <div className="mt-3 ml-6 border-l-2 border-primary pl-3">
+                            <p className="text-[11px] text-primary font-medium">🤖 Bot Reply</p>
+                            <p className="text-sm text-foreground">{c.bot_reply}</p>
+                          </div>
+                        )}
+
+                      </div>
                     </div>
 
+                    {/* RIGHT SIDE */}
+                    <div className="flex flex-col items-end justify-between shrink-0 min-h-[85px]">
+
+                      {/* TOP RIGHT */}
+                      <div className="text-right flex flex-col items-end gap-1">
+
+                        <p className="text-xs font-medium text-muted-foreground">
+                          {c.created_at ? new Date(c.created_at).toLocaleDateString() : ""}
+                        </p>
+                        {c.cost !== undefined && (
+                          <p className="text-xs font-medium text-muted-foreground">
+                            ${c.cost.toFixed(3)}
+                          </p>
+                        )}
+
+                        <span className="text-[11px] px-2 py-0.5 rounded bg-muted border border-border capitalize">
+                          Confidence {c.confidence_score}%
+                        </span>
+
+                        {/* ✅ GREEN READ TAG (if already read) */}
+                        {c.is_read && (
+                          <span className="text-[10px] px-2 py-0.5 rounded bg-green-500/10 text-green-600 border border-green-500/30">
+                            Read
+                          </span>
+                        )}
+
+                      </div>
+
+                      {/* BOTTOM RIGHT BUTTONS (DROPDOWN) */}
+                      <div className="mt-auto pt-2 relative">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setOpenDropdownId(openDropdownId === c.comment_id ? null : c.comment_id);
+                          }}
+                          className="btn-ghost !p-1 border border-border rounded"
+                        >
+                          <MoreVertical className="h-4 w-4 text-muted-foreground" />
+                        </button>
+
+                        {openDropdownId === c.comment_id && (
+                          <div className="absolute right-0 top-full mt-1 w-40 bg-card border border-border rounded-md shadow-lg z-50 py-1"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            {/* View on FB */}
+                            <a
+                              href={`https://facebook.com/${c.comment_id.includes('_') ? c.comment_id : c.post_id ? c.post_id + '_' + c.comment_id : c.comment_id}`}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="flex items-center gap-2 px-3 py-1.5 text-xs text-foreground hover:bg-muted transition-colors w-full text-left"
+                            >
+                              <ExternalLink className="h-3 w-3" /> View on FB
+                            </a>
+
+                            {/* Mark as Read */}
+                            {!c.is_read && (
+                              <button
+                                onClick={async () => {
+                                  setOpenDropdownId(null);
+                                  const tid = toast.loading("Marking as read...");
+                                  try {
+                                    await markAsReadMutation(c.comment_id).unwrap();
+                                    toast.success("Marked as read", { id: tid });
+                                  } catch (e) {
+                                    toast.error("Failed to mark as read", { id: tid });
+                                  }
+                                }}
+                                className="flex items-center gap-2 px-3 py-1.5 text-xs text-primary hover:bg-muted transition-colors w-full text-left"
+                              >
+                                <Check className="h-3 w-3" /> Mark as Read
+                              </button>
+                            )}
+
+                            {/* Delete Reply */}
+                            {c.bot_reply && (
+                              <button
+                                onClick={async () => {
+                                  setOpenDropdownId(null);
+                                  const tid = toast.loading("Deleting reply...");
+                                  try {
+                                    await deleteCommentMutation({ commentId: c.comment_id, deleteType: "reply_only" }).unwrap();
+                                    toast.success("Reply deleted", { id: tid });
+                                  } catch (e) {
+                                    toast.error("Failed to delete reply", { id: tid });
+                                  }
+                                }}
+                                className="flex items-center gap-2 px-3 py-1.5 text-xs text-warning hover:bg-muted transition-colors w-full text-left"
+                              >
+                                <X className="h-3 w-3" /> Delete Reply
+                              </button>
+                            )}
+
+                            {/* Delete Comment */}
+                            <button
+                              onClick={async () => {
+                                setOpenDropdownId(null);
+                                const tid = toast.loading("Deleting comment...");
+                                try {
+                                  await deleteCommentMutation({ commentId: c.comment_id, deleteType: "both" }).unwrap();
+                                  toast.success("Comment deleted", { id: tid });
+                                } catch (e) {
+                                  toast.error("Failed to delete comment", { id: tid });
+                                }
+                              }}
+                              className="flex items-center gap-2 px-3 py-1.5 text-xs text-destructive hover:bg-muted transition-colors w-full text-left"
+                            >
+                              <Trash className="h-3 w-3" /> Delete Comment
+                            </button>
+                          </div>
+                        )}
+                      </div>
+
+                    </div>
                   </div>
-                </div>
-              </li>
-            );
+                </li>
+              );
             })
+          )}
+          {isFetching && offset > 0 && (
+            <li className="p-6 flex justify-center w-full">
+              <Loader2 className="h-6 w-6 text-muted-foreground/50 animate-spin" />
+            </li>
           )}
         </ul>
       </div>
@@ -385,11 +435,12 @@ const FBCommentsView = () => {
           </div>
         )}
 
-        <button 
+        <button
           onClick={() => setOffset(prev => prev + 50)}
           disabled={isFetching || !data?.hasMore}
-          className="btn-secondary !py-1.5 text-xs disabled:opacity-50"
+          className="btn-secondary !py-1.5 text-xs disabled:opacity-50 flex items-center gap-2"
         >
+          {isFetching && offset > 0 && <Loader2 className="h-3 w-3 animate-spin" />}
           {isFetching ? "Loading..." : data?.hasMore ? "Load More" : "No More Items"}
         </button>
       </div>

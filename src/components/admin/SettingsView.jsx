@@ -9,7 +9,7 @@ import toast from "react-hot-toast";
 const SettingsView = () => {
   const [activeTab, setActiveTab] = useState("fb");
 
-  const { data, isLoading } = useGetBotSettingsQuery();
+  const { data, isLoading, isFetching } = useGetBotSettingsQuery();
   const [updateSettings, { isLoading: isUpdating }] = useUpdateBotSettingsMutation();
 
   const [fb, setFb] = useState(true);
@@ -65,17 +65,29 @@ const SettingsView = () => {
 
           <div className="p-5">
             <TabsContent value="fb">
-              <FBBotSettings fb={fb} setFb={setFb} />
+              <FBBotSettings 
+                fb={fb} 
+                setFb={setFb} 
+                updatedAt={data?.updated_at} 
+                updatedBy={data?.updated_by} 
+              />
             </TabsContent>
 
             <TabsContent value="web">
-              <WebBotSettings web={web} setWeb={setWeb} fallback={fallback} setFallback={setFallback} />
+              <WebBotSettings 
+                web={web} 
+                setWeb={setWeb} 
+                fallback={fallback} 
+                setFallback={setFallback} 
+                updatedAt={data?.updated_at} 
+                updatedBy={data?.updated_by} 
+              />
             </TabsContent>
           </div>
         </Tabs>
 
         <div className="px-5 py-3 border-t border-border flex justify-end gap-2">
-          <button onClick={save} disabled={isUpdating || isLoading} className="btn-primary">
+          <button onClick={save} disabled={isUpdating || isFetching} className="btn-primary">
             {isUpdating && <Loader2 className="h-4 w-4 animate-spin" />}
             {isUpdating ? "Saving…" : "Save Settings"}
           </button>

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import Cookies from "js-cookie";
 import Sidebar from "@/components/admin/Sidebar";
 import Topbar from "@/components/admin/Topbar";
 import MessageModal from "@/components/admin/MessageModal";
@@ -55,6 +56,7 @@ const DashboardLayout = ({ children }) => {
     <div className="flex h-screen w-full bg-background overflow-hidden">
       <Sidebar activeId={activeId} onSelect={handleSelectTab} onLogout={() => {
         localStorage.removeItem("user");
+        Cookies.remove("access_token");
         window.location.href = "/login";
       }} />
 

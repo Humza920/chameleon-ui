@@ -22,10 +22,10 @@ const Login = () => {
     e.preventDefault();
     try {
       const response = await login({ email, password }).unwrap();
-      if (response.access_token) {
+      if (response.data.access_token) {
         localStorage.setItem("user", JSON.stringify({ role: "admin", email }));
-        Cookies.set("access_token", response.access_token, { expires: 1 });
-      }
+        Cookies.set("access_token", response.data.access_token, { expires: 1 });
+      } 
       toast.success("Login successful!");
       navigate("/dashboard", { replace: true });
     } catch (err) {

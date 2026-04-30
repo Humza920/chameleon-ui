@@ -1,8 +1,8 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import Cookies from "js-cookie";
 
-const API_BASE = "https://9shklwjh-5000.asse.devtunnels.ms"; // Based on the API documentation
-// const API_BASE = "https://unnumerous-sleekit-shirlee.ngrok-free.dev"; // Based on the API documentation
+// const API_BASE = "https://9shklwjh-5000.asse.devtunnels.ms"; // Based on the API documentation
+const API_BASE = "https://unnumerous-sleekit-shirlee.ngrok-free.dev"; // Based on the API documentation
 
 // Base query with authentication
 const baseQuery = fetchBaseQuery({
@@ -13,6 +13,7 @@ const baseQuery = fetchBaseQuery({
       headers.set("Authorization", `Bearer ${token}`);
     }
     headers.set("Content-Type", "application/json");
+    headers.set("ngrok-skip-browser-warning", "true");
     return headers;
   },
 });
@@ -20,12 +21,11 @@ const baseQuery = fetchBaseQuery({
 // Custom base query with 401 handling
 const customBaseQuery = async (args, api, extraOptions) => {
   const result = await baseQuery(args, api, extraOptions);
-  
-  if (result.error?.status === 401) {
+
+  if (result.error?.status === 401 && args.url !== '/admin/login') {
     Cookies.remove("access_token");
-    window.location.reload();
   }
-  
+
   return result;
 };
 
@@ -82,7 +82,8 @@ export const api = createApi({
     searchUserConversation: builder.query({
       query: (userId) => `/admin/chats?limit=1&offset=0&search_user_id=${encodeURIComponent(userId)}`,
       transformResponse: (response) => {
-        const firstMessage = (response?.data || [])[0];
+        const messagesData = Array.isArray(response) ? response : (response?.data || []);
+        const firstMessage = messagesData[0];
         if (!firstMessage) return null;
         return {
           user_id: firstMessage.user_id || userId,
@@ -94,7 +95,7 @@ export const api = createApi({
 
     // ============ CHAT MESSAGES ============
     getChatMessages: builder.query({
-      query: ({ userId, limit = 50, offset = 0 }) => 
+      query: ({ userId, limit = 50, offset = 0 }) =>
         `/admin/chats?limit=${limit}&offset=${offset}&user_id=${encodeURIComponent(userId)}`,
       providesTags: (result, error, { userId }) => [{ type: 'Chat', id: userId }],
       serializeQueryArgs: ({ queryArgs }) => {
@@ -111,15 +112,18 @@ export const api = createApi({
       forceRefetch({ currentArg, previousArg }) {
         return currentArg?.offset !== previousArg?.offset;
       },
-      transformResponse: (response) => ({
-        messages: response?.data || [],
-        total: response?.total || 0,
-        hasMore: response?.has_more ?? (response?.data?.length === 50),
-      }),
+      transformResponse: (response) => {
+        const messagesData = Array.isArray(response) ? response : (response?.data || []);
+        return {
+          messages: messagesData,
+          total: response?.total || 0,
+          hasMore: response?.has_more ?? (messagesData.length === 50),
+        };
+      },
     }),
 
     getAllChats: builder.query({
-      query: ({ limit = 20, offset = 0 }) => 
+      query: ({ limit = 20, offset = 0 }) =>
         `/admin/chats?limit=${limit}&offset=${offset}`,
       providesTags: ['Chat'],
       transformResponse: (response) => ({
@@ -131,16 +135,35 @@ export const api = createApi({
 
     // ============ FEEDBACK ============
     getFeedback: builder.query({
-      query: ({ limit = 20, offset = 0, ratings = '' }) => {
+      query: ({ limit = 100, offset = 0, ratings = '' }) => {
         const ratingsParam = ratings ? `&ratings=${ratings}` : '';
         return `/admin/feedback?limit=${limit}&offset=${offset}${ratingsParam}`;
       },
       providesTags: ['Feedback'],
-      transformResponse: (response) => ({
-        feedback: response?.data || [],
-        total: response?.total || 0,
-        hasMore: response?.has_more ?? (response?.data?.length === limit),
-      }),
+      serializeQueryArgs: ({ queryArgs }) => {
+        const { offset, ...rest } = queryArgs;
+        return rest;
+      },
+      merge: (currentCache, newItems, { arg }) => {
+        if (arg.offset === 0) {
+          return newItems;
+        }
+        currentCache.feedback.push(...newItems.feedback);
+        currentCache.total = newItems.total;
+        currentCache.hasMore = newItems.hasMore;
+      },
+      forceRefetch({ currentArg, previousArg }) {
+        return currentArg?.offset !== previousArg?.offset;
+      },
+      transformResponse: (response, meta, arg) => {
+        const limit = arg?.limit || 100;
+        const dataList = response?.data || [];
+        return {
+          feedback: dataList,
+          total: response?.total || 0,
+          hasMore: response?.has_more ?? (dataList.length === limit),
+        };
+      },
     }),
 
     getAllFeedback: builder.query({
@@ -157,14 +180,14 @@ export const api = createApi({
 
     // ============ FACEBOOK COMMENTS ============
     getFBComments: builder.query({
-      query: ({ 
-        limit = 50, 
-        offset = 0, 
-        confidenceBucket = '', 
-        readStatus = '', 
-        searchQuery = '', 
-        startDate = '', 
-        endDate = '' 
+      query: ({
+        limit = 50,
+        offset = 0,
+        confidenceBucket = '',
+        readStatus = '',
+        searchQuery = '',
+        startDate = '',
+        endDate = ''
       }) => {
         const params = new URLSearchParams();
         params.append('limit', limit);
@@ -174,7 +197,7 @@ export const api = createApi({
         if (searchQuery) params.append('search_query', searchQuery);
         if (startDate) params.append('start_date', startDate);
         if (endDate) params.append('end_date', endDate);
-        
+
         return `/admin/fb-comments?${params.toString()}`;
       },
       providesTags: ['FBComment'],

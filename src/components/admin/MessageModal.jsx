@@ -1,4 +1,5 @@
 import { X } from "lucide-react";
+import ReactMarkdown from "react-markdown";
 
 const MessageModal = ({ message, onClose }) => {
   if (!message) return null;
@@ -9,8 +10,10 @@ const MessageModal = ({ message, onClose }) => {
           <h3 className="text-sm font-semibold">Full Message</h3>
           <button onClick={onClose} className="icon-btn"><X className="h-4 w-4" /></button>
         </div>
-        <div className="p-5">
-          <p className="text-sm text-foreground whitespace-pre-wrap leading-relaxed">{message}</p>
+        <div className="p-5 overflow-y-auto max-h-[70vh]">
+          <div className="text-sm text-foreground whitespace-pre-wrap leading-relaxed flex flex-col gap-2">
+            <ReactMarkdown>{message}</ReactMarkdown>
+          </div>
         </div>
         <div className="px-5 py-3 border-t border-border flex justify-end">
           <button onClick={onClose} className="btn-secondary">Close</button>

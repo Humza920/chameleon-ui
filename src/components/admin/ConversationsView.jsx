@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Search, MessageCircle, User, Bot, Loader2 } from "lucide-react";
 import { useGetUsersQuery, useGetChatMessagesQuery } from "@/redux/servives/index";
+import ReactMarkdown from "react-markdown";
 
 const ConversationsView = ({ onShowFull }) => {
   const [selectedId, setSelectedId] = useState(null);
@@ -65,7 +66,7 @@ const ConversationsView = ({ onShowFull }) => {
         </div>
 
         <div className="flex-1 overflow-y-auto scroll-thin">
-          {usersLoading ? (
+          {(usersFetching && userOffset === 0) ? (
             <div className="flex flex-col items-center justify-center h-full p-8 text-center">
               <Loader2 className="h-8 w-8 text-muted-foreground/40 mb-2 animate-spin" />
               <p className="text-sm text-muted-foreground">Loading...</p>
@@ -91,18 +92,26 @@ const ConversationsView = ({ onShowFull }) => {
                           {c.last_message_time ? new Date(c.last_message_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ""}
                         </span>
                       </div>
-                      <p className="mt-0.5 text-xs text-muted-foreground truncate">{c.last_message}</p>
+                      <div className="mt-0.5 text-xs text-muted-foreground line-clamp-1 [&_p]:inline">
+                        <ReactMarkdown>{c.last_message}</ReactMarkdown>
+                      </div>
                     </button>
                   </li>
                 ))}
               </ul>
+              {usersFetching && userOffset > 0 && (
+                <div className="p-4 flex justify-center w-full border-t border-border">
+                  <Loader2 className="h-5 w-5 text-muted-foreground/50 animate-spin" />
+                </div>
+              )}
               {list.length >= 20 && list.length % 20 === 0 && (
                 <div className="p-3 text-center border-t border-border mt-auto">
                   <button 
                     onClick={() => setUserOffset(prev => prev + 20)}
                     disabled={usersFetching}
-                    className="btn-ghost !py-1 !px-3 text-[11px] disabled:opacity-50"
+                    className="btn-ghost !py-1 !px-3 text-[11px] disabled:opacity-50 flex items-center justify-center mx-auto gap-1.5"
                   >
+                    {usersFetching && userOffset > 0 && <Loader2 className="h-3 w-3 animate-spin" />}
                     {usersFetching ? "Loading..." : "Load More Users"}
                   </button>
                 </div>
@@ -134,7 +143,7 @@ const ConversationsView = ({ onShowFull }) => {
         </div>
 
         <div className="flex-1 overflow-y-auto scroll-thin px-4 py-5 space-y-3 bg-muted/30">
-          {chatLoading ? (
+          {(chatFetching && messageOffset === 0) ? (
             <div className="h-full flex flex-col items-center justify-center text-center">
               <Loader2 className="h-10 w-10 text-muted-foreground/40 mb-2 animate-spin" />
               <p className="text-sm text-muted-foreground">Loading messages...</p>
@@ -156,35 +165,45 @@ const ConversationsView = ({ onShowFull }) => {
                   <button 
                     onClick={() => setMessageOffset(prev => prev + 50)}
                     disabled={chatFetching}
-                    className="btn-ghost !py-1 !px-3 text-[11px] disabled:opacity-50 bg-card border border-border shadow-sm"
+                    className="btn-ghost !py-1 !px-3 text-[11px] disabled:opacity-50 bg-card border border-border shadow-sm flex items-center justify-center mx-auto gap-2"
                   >
+                    {chatFetching && messageOffset > 0 && <Loader2 className="h-3 w-3 animate-spin" />}
                     {chatFetching ? "Loading older messages..." : "Load Older Messages"}
                   </button>
                 </div>
               )}
-              {selectedMessages.map((m, i) => (
-                <div key={m.id || i} className={`flex gap-2.5 ${m.role === "user" ? "justify-end" : "justify-start"}`}>
-                  {(m.role === "bot" || m.role === "assistant") && (
+              {selectedMessages.map((m, i) => {
+                const isUser = m.role === "user" || m.role === "human";
+                const isBot = m.role === "bot" || m.role === "assistant" || m.role === "ai";
+                return (
+                <div key={m.id || i} className={`flex gap-2.5 ${isUser ? "justify-end" : "justify-start"}`}>
+                  {isBot && (
                     <div className="h-7 w-7 shrink-0 rounded-full bg-primary/10 text-primary flex items-center justify-center">
                       <Bot className="h-3.5 w-3.5" />
                     </div>
                   )}
-                  <button
+                  <div
                     onClick={() => onShowFull(m.message || m.text)}
-                    className={`max-w-[70%] text-left rounded-lg px-3 py-2 text-sm transition-colors ${m.role === "user"
-                      ? "bg-primary text-primary-foreground hover:bg-primary-soft"
-                      : "bg-card border border-border text-foreground"
+                    className={`max-w-[70%] text-left rounded-lg px-3 py-2 text-sm transition-colors cursor-pointer ${isUser
+                      ? "bg-primary text-primary-foreground hover:bg-primary-soft text-white"
+                      : "bg-card border border-border text-foreground overflow-x-auto"
                       }`}
                   >
-                    {m.message || m.text}
-                  </button>
-                  {m.role === "user" && (
+                    {isBot ? (
+                      <div className="flex flex-col gap-2">
+                        <ReactMarkdown>{m.message || m.text}</ReactMarkdown>
+                      </div>
+                    ) : (
+                      m.message || m.text
+                    )}
+                  </div>
+                  {isUser && (
                     <div className="h-7 w-7 shrink-0 rounded-full bg-muted flex items-center justify-center">
                       <User className="h-3.5 w-3.5 text-muted-foreground" />
                     </div>
                   )}
                 </div>
-              ))}
+              )})}
             </>
           )}
         </div>
