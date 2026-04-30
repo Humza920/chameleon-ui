@@ -2,6 +2,7 @@ import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import Cookies from "js-cookie";
 
 const API_BASE = "https://9shklwjh-5000.asse.devtunnels.ms"; // Based on the API documentation
+// const API_BASE = "https://unnumerous-sleekit-shirlee.ngrok-free.dev"; // Based on the API documentation
 
 // Base query with authentication
 const baseQuery = fetchBaseQuery({
@@ -60,9 +61,22 @@ export const api = createApi({
 
     // ============ CONVERSATIONS / USERS ============
     getUsers: builder.query({
-      query: () => '/admin/users',
+      query: ({ limit = 20, offset = 0, search = '' } = {}) => {
+        let url = `/admin/users?limit=${limit}&offset=${offset}`;
+        if (search) url += `&search_user_id=${encodeURIComponent(search)}`;
+        return url;
+      },
       providesTags: ['User'],
-      transformResponse: (response) => response?.data || [],
+      serializeQueryArgs: ({ endpointName, queryArgs }) => {
+        return `${endpointName}-${queryArgs.search || ''}`; // Cache by search query
+      },
+      merge: (currentCache, newItems) => {
+        currentCache.push(...newItems);
+      },
+      forceRefetch({ currentArg, previousArg }) {
+        return currentArg?.offset !== previousArg?.offset;
+      },
+      transformResponse: (response) => response?.data || response || [],
     }),
 
     searchUserConversation: builder.query({
@@ -83,11 +97,24 @@ export const api = createApi({
       query: ({ userId, limit = 50, offset = 0 }) => 
         `/admin/chats?limit=${limit}&offset=${offset}&user_id=${encodeURIComponent(userId)}`,
       providesTags: (result, error, { userId }) => [{ type: 'Chat', id: userId }],
+      serializeQueryArgs: ({ queryArgs }) => {
+        return { userId: queryArgs.userId }; // cache by userId only
+      },
+      merge: (currentCache, newItems, { arg }) => {
+        if (arg.offset === 0) {
+          return newItems;
+        }
+        currentCache.messages.push(...newItems.messages);
+        currentCache.total = newItems.total;
+        currentCache.hasMore = newItems.hasMore;
+      },
+      forceRefetch({ currentArg, previousArg }) {
+        return currentArg?.offset !== previousArg?.offset;
+      },
       transformResponse: (response) => ({
         messages: response?.data || [],
         total: response?.total || 0,
         hasMore: response?.has_more ?? (response?.data?.length === 50),
-        nextOffset: (response?.data?.length || 0),
       }),
     }),
 
@@ -151,6 +178,21 @@ export const api = createApi({
         return `/admin/fb-comments?${params.toString()}`;
       },
       providesTags: ['FBComment'],
+      serializeQueryArgs: ({ queryArgs }) => {
+        const { offset, ...rest } = queryArgs;
+        return rest; // cache by all args except offset
+      },
+      merge: (currentCache, newItems, { arg }) => {
+        if (arg.offset === 0) {
+          return newItems;
+        }
+        currentCache.comments.push(...newItems.comments);
+        currentCache.total = newItems.total;
+        currentCache.hasMore = newItems.hasMore;
+      },
+      forceRefetch({ currentArg, previousArg }) {
+        return currentArg?.offset !== previousArg?.offset;
+      },
       transformResponse: (response) => ({
         comments: response?.data || [],
         total: response?.total || 0,

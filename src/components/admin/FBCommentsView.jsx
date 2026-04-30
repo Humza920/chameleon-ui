@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Search, ChevronDown, ChevronUp, Facebook, Loader2 } from "lucide-react";
+import { Search, ChevronDown, ChevronUp, Send, Loader2 } from "lucide-react";
 import { useGetFBCommentsQuery, useMarkFBCommentAsReadMutation, useDeleteFBCommentMutation } from "@/redux/servives/index";
 import toast from "react-hot-toast";
 
@@ -34,16 +34,25 @@ const FBCommentsView = () => {
   const [selectMode, setSelectMode] = useState(false);
   const [selected, setSelected] = useState(new Set());
 
+  const [offset, setOffset] = useState(0);
+
   const [debouncedQuery, setDebouncedQuery] = useState("");
 
   useEffect(() => {
-    const handler = setTimeout(() => setDebouncedQuery(query), 500);
+    const handler = setTimeout(() => {
+      setDebouncedQuery(query);
+    }, 500);
     return () => clearTimeout(handler);
   }, [query]);
 
-  const { data, isLoading } = useGetFBCommentsQuery({
-    limit: 100,
-    offset: 0,
+  // Reset offset when any filter changes
+  useEffect(() => {
+    setOffset(0);
+  }, [debouncedQuery, conf, readFilter, start, end]);
+
+  const { data, isLoading, isFetching } = useGetFBCommentsQuery({
+    limit: 50,
+    offset: offset,
     confidenceBucket: conf || '',
     readStatus: readFilter || '',
     searchQuery: debouncedQuery || '',
@@ -105,8 +114,8 @@ const FBCommentsView = () => {
     <section className="surface-card">
       <div className="px-4 md:px-5 py-4 border-b border-border flex items-center justify-between gap-3">
         <div className="flex items-center gap-2">
-          <Facebook className="h-4 w-4 text-primary" />
-          <h2 className="text-sm font-semibold">Facebook Comments</h2>
+          <Send className="h-4 w-4 text-primary" />
+          <h2 className="text-sm font-semibold">Send Comments</h2>
         </div>
         <button onClick={() => setOpen(!open)} className="btn-ghost !text-xs">
           {open ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
@@ -180,7 +189,7 @@ const FBCommentsView = () => {
               { label: "Total FB Comments", value: data?.total ?? list.length },
               { label: "Low Confidence", value: lowCount },
               { label: "Unread Comments", value: unreadCount },
-              { label: "💰 Total Cost", value: `$${totalCost}` },
+              { label: "Total Cost", value: `$${totalCost}` },
             ].map((s) => (
               <div key={s.label} className="surface-card p-3">
                 <p className="text-[10px] uppercase text-muted-foreground">{s.label}</p>
@@ -199,7 +208,7 @@ const FBCommentsView = () => {
               <p className="text-sm text-muted-foreground">Loading comments...</p>
             </li>
           ) : list.length === 0 ? (
-            <li className="p-10 text-center text-sm text-muted-foreground">No Facebook comments yet</li>
+            <li className="p-10 text-center text-sm text-muted-foreground">No Send comments yet</li>
           ) : (
             list.map((c) => {
               const confLevel = getConfidenceLevel(c.confidence_score || 0);
@@ -340,7 +349,7 @@ const FBCommentsView = () => {
             onClick={() => setSelectMode(true)}
             className="btn-secondary !py-1.5 text-xs"
           >
-            📋 Select
+            Select
           </button>
         ) : (
           <div className="flex gap-2 flex-wrap">
@@ -376,7 +385,13 @@ const FBCommentsView = () => {
           </div>
         )}
 
-        <button className="btn-secondary !py-1.5 text-xs">Load More</button>
+        <button 
+          onClick={() => setOffset(prev => prev + 50)}
+          disabled={isFetching || !data?.hasMore}
+          className="btn-secondary !py-1.5 text-xs disabled:opacity-50"
+        >
+          {isFetching ? "Loading..." : data?.hasMore ? "Load More" : "No More Items"}
+        </button>
       </div>
     </section>
   );

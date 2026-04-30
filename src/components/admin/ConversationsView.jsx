@@ -1,17 +1,36 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Search, MessageCircle, User, Bot, Loader2 } from "lucide-react";
 import { useGetUsersQuery, useGetChatMessagesQuery } from "@/redux/servives/index";
 
 const ConversationsView = ({ onShowFull }) => {
   const [selectedId, setSelectedId] = useState(null);
   const [query, setQuery] = useState("");
+  const [debouncedQuery, setDebouncedQuery] = useState("");
+  const [userOffset, setUserOffset] = useState(0);
+  const [messageOffset, setMessageOffset] = useState(0);
 
-  const { data: usersData, isLoading: usersLoading } = useGetUsersQuery();
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedQuery(query);
+      setUserOffset(0);
+    }, 500);
+    return () => clearTimeout(handler);
+  }, [query]);
+
+  useEffect(() => {
+    setMessageOffset(0);
+  }, [selectedId]);
+
+  const { data: usersData, isLoading: usersLoading, isFetching: usersFetching } = useGetUsersQuery({
+    limit: 20,
+    offset: userOffset,
+    search: debouncedQuery
+  });
+  
   const list = usersData || [];
-  const filteredList = list.filter((c) => c.user_id?.toLowerCase().includes(query.toLowerCase()));
 
-  const { data: chatData, isLoading: chatLoading } = useGetChatMessagesQuery(
-    { userId: selectedId, limit: 100, offset: 0 },
+  const { data: chatData, isLoading: chatLoading, isFetching: chatFetching } = useGetChatMessagesQuery(
+    { userId: selectedId, limit: 50, offset: messageOffset },
     { skip: !selectedId }
   );
 
@@ -51,32 +70,44 @@ const ConversationsView = ({ onShowFull }) => {
               <Loader2 className="h-8 w-8 text-muted-foreground/40 mb-2 animate-spin" />
               <p className="text-sm text-muted-foreground">Loading...</p>
             </div>
-          ) : filteredList.length === 0 ? (
+          ) : list.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full p-8 text-center">
               <MessageCircle className="h-8 w-8 text-muted-foreground/40 mb-2" />
               <p className="text-sm text-muted-foreground">No conversations found</p>
             </div>
           ) : (
-            <ul className="divide-y divide-border">
-              {filteredList.map((c) => (
-                <li key={c.user_id}>
-                  <button
-                    onClick={() => setSelectedId(c.user_id)}
-                    className={`w-full text-left px-4 py-3 transition-colors hover:bg-muted/60 ${
-                      selectedId === c.user_id ? "bg-primary-soft border-l-2 border-primary" : ""
-                    }`}
+            <div className="flex flex-col h-full">
+              <ul className="divide-y divide-border">
+                {list.map((c, i) => (
+                  <li key={`${c.user_id}-${i}`}>
+                    <button
+                      onClick={() => setSelectedId(c.user_id)}
+                      className={`w-full text-left px-4 py-3 transition-colors hover:bg-primary-soft ${selectedId === c.user_id ? "bg-primary-soft border-l-2 border-primary" : "border-l-2 border-transparent"
+                        }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <p className="text-sm font-medium text-foreground truncate">{c.user_id}</p>
+                        <span className="text-[10px] text-muted-foreground">
+                          {c.last_message_time ? new Date(c.last_message_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ""}
+                        </span>
+                      </div>
+                      <p className="mt-0.5 text-xs text-muted-foreground truncate">{c.last_message}</p>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+              {list.length >= 20 && list.length % 20 === 0 && (
+                <div className="p-3 text-center border-t border-border mt-auto">
+                  <button 
+                    onClick={() => setUserOffset(prev => prev + 20)}
+                    disabled={usersFetching}
+                    className="btn-ghost !py-1 !px-3 text-[11px] disabled:opacity-50"
                   >
-                    <div className="flex items-center justify-between">
-                      <p className="text-sm font-medium text-foreground truncate">{c.user_id}</p>
-                      <span className="text-[10px] text-muted-foreground">
-                        {c.last_message_time ? new Date(c.last_message_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ""}
-                      </span>
-                    </div>
-                    <p className="mt-0.5 text-xs text-muted-foreground truncate">{c.last_message}</p>
+                    {usersFetching ? "Loading..." : "Load More Users"}
                   </button>
-                </li>
-              ))}
-            </ul>
+                </div>
+              )}
+            </div>
           )}
         </div>
       </section>
@@ -97,8 +128,8 @@ const ConversationsView = ({ onShowFull }) => {
             </div>
           </div>
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            <span>📊 Tokens: <span className="font-semibold text-foreground">{totalTokens}</span></span>
-            <span>💰 Cost: <span className="font-semibold text-foreground">${totalCost.toFixed(4)}</span></span>
+            <span>Tokens: <span className="font-semibold text-foreground">{totalTokens}</span></span>
+            <span>Cost: <span className="font-semibold text-foreground">${totalCost.toFixed(4)}</span></span>
           </div>
         </div>
 
@@ -119,36 +150,48 @@ const ConversationsView = ({ onShowFull }) => {
               <p className="text-sm text-muted-foreground">No messages in this conversation</p>
             </div>
           ) : (
-            selectedMessages.map((m, i) => (
-              <div key={m.id || i} className={`flex gap-2.5 ${m.role === "user" ? "justify-end" : "justify-start"}`}>
-                {(m.role === "bot" || m.role === "assistant") && (
-                  <div className="h-7 w-7 shrink-0 rounded-full bg-primary/10 text-primary flex items-center justify-center">
-                    <Bot className="h-3.5 w-3.5" />
-                  </div>
-                )}
-                <button
-                  onClick={() => onShowFull(m.message || m.text)}
-                  className={`max-w-[70%] text-left rounded-lg px-3 py-2 text-sm transition-colors ${
-                    m.role === "user"
-                      ? "bg-primary text-primary-foreground"
+            <>
+              {chatData?.hasMore && (
+                <div className="text-center pb-4">
+                  <button 
+                    onClick={() => setMessageOffset(prev => prev + 50)}
+                    disabled={chatFetching}
+                    className="btn-ghost !py-1 !px-3 text-[11px] disabled:opacity-50 bg-card border border-border shadow-sm"
+                  >
+                    {chatFetching ? "Loading older messages..." : "Load Older Messages"}
+                  </button>
+                </div>
+              )}
+              {selectedMessages.map((m, i) => (
+                <div key={m.id || i} className={`flex gap-2.5 ${m.role === "user" ? "justify-end" : "justify-start"}`}>
+                  {(m.role === "bot" || m.role === "assistant") && (
+                    <div className="h-7 w-7 shrink-0 rounded-full bg-primary/10 text-primary flex items-center justify-center">
+                      <Bot className="h-3.5 w-3.5" />
+                    </div>
+                  )}
+                  <button
+                    onClick={() => onShowFull(m.message || m.text)}
+                    className={`max-w-[70%] text-left rounded-lg px-3 py-2 text-sm transition-colors ${m.role === "user"
+                      ? "bg-primary text-primary-foreground hover:bg-primary-soft"
                       : "bg-card border border-border text-foreground"
-                  }`}
-                >
-                  {m.message || m.text}
-                </button>
-                {m.role === "user" && (
-                  <div className="h-7 w-7 shrink-0 rounded-full bg-muted flex items-center justify-center">
-                    <User className="h-3.5 w-3.5 text-muted-foreground" />
-                  </div>
-                )}
-              </div>
-            ))
+                      }`}
+                  >
+                    {m.message || m.text}
+                  </button>
+                  {m.role === "user" && (
+                    <div className="h-7 w-7 shrink-0 rounded-full bg-muted flex items-center justify-center">
+                      <User className="h-3.5 w-3.5 text-muted-foreground" />
+                    </div>
+                  )}
+                </div>
+              ))}
+            </>
           )}
         </div>
 
         <div className="px-4 py-3 border-t border-border flex items-center justify-between">
-          <button className="btn-secondary !py-1.5 !px-3 text-xs">Load More Messages</button>
           <p className="text-[11px] text-muted-foreground">Read-only admin view • No message sending</p>
+          <span className="text-[11px] text-muted-foreground">Showing {selectedMessages.length} messages</span>
         </div>
       </section>
     </div>

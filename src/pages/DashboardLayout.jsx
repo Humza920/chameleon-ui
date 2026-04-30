@@ -42,7 +42,7 @@ const DashboardLayout = ({ children }) => {
   const admin = getAdmin();
   const userString = localStorage.getItem("user");
   const userData = userString ? JSON.parse(userString) : { email: "admin@example.com" };
-  const adminName = userData.email?.split("@")[0] || admin.name;
+  const adminName = "Zuhair Khan"
 
   const stats = [
     { label: "Sessions", value: apiStats?.total_sessions ?? "..." },
